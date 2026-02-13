@@ -15,29 +15,27 @@
         body { 
             font-family: 'Inter', sans-serif; 
             -webkit-tap-highlight-color: transparent;
+            overflow: hidden;
+            background-color: #2c2c2c;
         }
 
-        /* Esconde scrollbars nativas mantendo funcionalidade */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        /* Estilização da scrollbar para a descrição */
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f1f1; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
 
-        /* Animação do Toggle (Deslizamento Suave) */
-        .toggle-container {
-            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        /* Animação Premium dos Toggles */
+        .toggle-container { 
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s ease; 
         }
-        .toggle-knob {
-            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        .toggle-active-press { transform: scale(0.92); }
+        .toggle-knob { 
+            transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55), width 0.25s ease; 
         }
-        .toggle-container:active .toggle-knob {
-            width: 28px;
-        }
+        .knob-stretching { width: 1.75rem !important; }
 
-        /* Animação da Notificação (Toast) - Topo Central */
+        /* Animação do Toast */
         @keyframes slideInTop {
             from { transform: translate(-50%, -120%); opacity: 0; }
             to { transform: translate(-50%, 0); opacity: 1; }
@@ -46,39 +44,79 @@
             from { transform: translate(-50%, 0); opacity: 1; }
             to { transform: translate(-50%, -120%); opacity: 0; }
         }
-        .animate-toast-in {
-            animation: slideInTop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-        }
-        .animate-toast-out {
-            animation: slideOutTop 0.5s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
-        }
+        .animate-toast-in { animation: slideInTop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        .animate-toast-out { animation: slideOutTop 0.5s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards; }
 
-        /* Barra de Progresso da Notificação */
-        @keyframes progressLine {
-            from { transform: scaleX(1); }
-            to { transform: scaleX(0); }
+        /* Sliders de Conteúdo */
+        .slide-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .animate-progress {
-            animation: progressLine 4000ms linear forwards;
+        .step-content {
+            min-width: 100%;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            display: flex;
+            flex-direction: column;
         }
+        .step-content.active { opacity: 1; }
 
-        /* Animações da Modal */
-        @keyframes modalFadeIn { from { opacity: 0; } to { opacity: 1; } }
+        /* Botões Quadrados Estilo Marketplace */
+        .square-btn {
+            width: 38px;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #e5e7eb;
+            background: white;
+            transition: all 0.2s;
+        }
+        .square-btn:hover { background-color: #f9fafb; border-color: #d1d5db; }
+        .square-btn:active { transform: scale(0.95); }
+
         @keyframes modalScaleUp { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .animate-modal-fade { animation: modalFadeIn 0.3s ease-out forwards; }
         .animate-modal-scale { animation: modalScaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
     </style>
 </head>
-<body class="bg-[#2c2c2c] md:p-4">
+<body class="md:p-4">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- Componente Toast (Notificação de Sucesso) ---
+        const ToggleSwitch = ({ checked, onChange }) => {
+            const [isPressing, setIsPressing] = useState(false);
+            const handleInteraction = (e) => {
+                e.preventDefault();
+                onChange();
+                setIsPressing(true);
+                setTimeout(() => setIsPressing(false), 200);
+            };
+            return (
+                <div 
+                    onMouseDown={() => setIsPressing(true)}
+                    onMouseUp={() => setIsPressing(false)}
+                    onMouseLeave={() => setIsPressing(false)}
+                    onClick={handleInteraction}
+                    className={`toggle-container relative inline-flex h-8 w-14 shrink-0 items-center rounded-full cursor-pointer shadow-inner transition-all
+                        ${checked ? 'bg-[#FFB85C]' : 'bg-gray-200'}
+                        ${isPressing ? 'toggle-active-press' : ''}`}
+                >
+                    <span className={`toggle-knob inline-block h-6 w-6 rounded-full bg-white shadow-md transform 
+                        ${checked ? 'translate-x-7' : 'translate-x-1'}
+                        ${isPressing ? 'knob-stretching' : ''}`} 
+                    />
+                </div>
+            );
+        };
+
         const Toast = ({ show, message, onClose }) => {
             const [isExiting, setIsExiting] = useState(false);
-
             useEffect(() => {
                 if (show) {
                     setIsExiting(false);
@@ -86,14 +124,11 @@
                     return () => clearTimeout(timer);
                 }
             }, [show]);
-
             const handleClose = () => {
                 setIsExiting(true);
                 setTimeout(onClose, 500);
             };
-
             if (!show && !isExiting) return null;
-
             return (
                 <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[200] flex items-start gap-4 p-5 bg-[#78B16B] text-white rounded-md shadow-2xl min-w-[320px] max-w-[90vw] md:max-w-[400px] ${isExiting ? 'animate-toast-out' : 'animate-toast-in'}`}>
                     <div className="mt-1">
@@ -103,76 +138,58 @@
                         <div className="font-bold text-lg leading-none mb-1 text-white">Sucesso</div>
                         <div className="text-sm opacity-90 text-white">{message}</div>
                     </div>
-                    <button onClick={handleClose} className="opacity-70 hover:opacity-100 transition-opacity p-1">
+                    <button onClick={handleClose} className="opacity-70 hover:opacity-100 p-1">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
-                    <div className="absolute bottom-0 left-0 h-1 bg-black/20 w-full origin-left animate-progress" />
                 </div>
             );
         };
 
-        // --- Componente Modal para Adicionar Fotos ---
         const PhotoModal = ({ isOpen, onClose }) => {
             const [isPrincipal, setIsPrincipal] = useState(false);
             if (!isOpen) return null;
-
             return (
-                <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/50 animate-modal-fade" onClick={onClose}>
+                <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
                     <div className="bg-[#f0f2f5] w-full max-w-lg rounded-xl shadow-2xl overflow-hidden animate-modal-scale" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between p-4 border-b border-gray-300">
-                            <h3 className="text-gray-700 font-bold uppercase tracking-wider text-xs md:text-sm leading-none ml-1">Adicionar Fotos do Produto</h3>
+                            <h3 className="text-gray-700 font-bold uppercase tracking-wider text-xs ml-1">Adicione as Fotos do Produto</h3>
                             <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
                                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                             </button>
                         </div>
                         <div className="p-10 flex flex-col items-center justify-center text-center gap-6">
-                            <div className="w-24 h-24 rounded-full bg-white/60 border-4 border-dashed border-gray-300 flex items-center justify-center text-gray-400 shadow-inner">
+                            <div className="w-24 h-24 rounded-full bg-white/60 border-4 border-dashed border-gray-300 flex items-center justify-center text-gray-300">
                                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                             </div>
                             <div>
-                                <p className="text-gray-600 font-medium mb-1">Arraste as fotos para aqui</p>
-                                <p className="text-gray-400 text-[10px] uppercase tracking-wider">ou clique para selecionar do seu computador</p>
+                                <p className="text-gray-600 font-medium mb-1">Arraste as Fotos para Aqui</p>
+                                <p className="text-gray-400 text-[10px] uppercase tracking-wider">ou clique para selecionar do computador</p>
                             </div>
-                            <label className="flex items-center gap-3 cursor-pointer group select-none mt-2">
-                                <div className="relative">
-                                    <input type="checkbox" className="sr-only" checked={isPrincipal} onChange={() => setIsPrincipal(!isPrincipal)} />
-                                    <div className={`w-5 h-5 border-2 rounded transition-colors ${isPrincipal ? 'bg-[#26BA9A] border-[#26BA9A]' : 'bg-white border-gray-300 group-hover:border-[#26BA9A]'}`}>
-                                        {isPrincipal && <svg viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" className="w-full h-full p-0.5"><polyline points="20 6 9 17 4 12"></polyline></svg>}
-                                    </div>
-                                </div>
-                                <span className="text-sm font-semibold text-gray-600">Marcar esta foto como principal</span>
-                            </label>
-                            <button className="px-8 py-2.5 bg-[#3b82f6] text-white rounded-lg font-bold text-xs uppercase hover:bg-blue-600 transition-colors shadow-md tracking-wider">Selecionar Ficheiros</button>
+                            <div className="flex items-center gap-4 bg-white/40 p-4 rounded-xl border border-gray-200">
+                                <ToggleSwitch checked={isPrincipal} onChange={() => setIsPrincipal(!isPrincipal)} />
+                                <span className="text-sm font-semibold text-gray-600">Marcar como Foto Principal</span>
+                            </div>
+                            <button className="px-8 py-2.5 bg-[#3b82f6] text-white rounded-lg font-bold text-xs uppercase shadow-md active:scale-95 transition-all">Selecionar Ficheiros</button>
                         </div>
-                        <div className="bg-[#e5e7eb] p-4 flex flex-col md:flex-row items-center justify-between gap-4">
-                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Pode selecionar até 12 fotos</span>
-                            <div className="flex gap-3 w-full md:w-auto">
-                                <button onClick={onClose} className="flex-1 md:flex-none px-5 py-2 text-gray-500 font-bold text-[11px] uppercase hover:text-gray-700">Cancelar</button>
-                                <button onClick={onClose} className="flex-1 md:flex-none px-8 py-2.5 bg-[#26BA9A] text-white rounded-lg font-bold text-[11px] uppercase shadow-md hover:bg-[#1f9b7f]">Concluir</button>
-                            </div>
+                        <div className="bg-[#e5e7eb] p-4 flex items-center justify-between">
+                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">Até 12 Fotos</span>
+                            <button onClick={onClose} className="px-8 py-2.5 bg-[#26BA9A] text-white rounded-lg font-bold text-[11px] uppercase shadow-md">Concluir</button>
                         </div>
                     </div>
                 </div>
             );
         };
 
-        // --- Aplicação Principal ---
         const App = () => {
             const [currentStep, setCurrentStep] = useState(0);
             const [toast, setToast] = useState({ show: false, message: "" });
             const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
-
-            // Definição das Etapas do Menu
-            const steps = [
-                { id: 'configuracao', label: 'Configuração' },
-                { id: 'identificacao', label: 'Identificação' },
-                { id: 'precificacao', label: 'Precificação' },
-                { id: 'estoque', label: 'Estoque' }
-            ];
-
+            const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+            const [categories, setCategories] = useState(['PERFUME', 'MAQUILHAGEM', 'CORPO']);
+            
             const [formData, setFormData] = useState({
                 habilitarIntegracao: false,
-                grupoCategoria: '',
+                grupoCategoria: 'PERFUME',
                 disponibilidade: 'Disponível',
                 nomePersonalizado: false,
                 nomePersonalizadoValor: '#1700100#17049010#TRU LC BRANCO 12,5',
@@ -188,12 +205,16 @@
                 canalVenda: ''
             });
 
+            const steps = [
+                { id: 'configuracao', label: 'Configuração' },
+                { id: 'identificacao', label: 'Identificação' },
+                { id: 'precificacao', label: 'Precificação' },
+                { id: 'estoque', label: 'Estoque' }
+            ];
+
             const handleToggle = (field) => setFormData(prev => ({ ...prev, [field]: !prev[field] }));
             const handleInputChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
-            
-            const handleSave = (msg = "Você editou um(a) Produto!") => {
-                setToast({ show: true, message: msg });
-            };
+            const handleSave = (msg = "Você editou um(a) Produto!") => setToast({ show: true, message: msg });
 
             const nextStep = () => {
                 if (currentStep < steps.length - 1) setCurrentStep(currentStep + 1);
@@ -201,277 +222,224 @@
             };
             const prevStep = () => currentStep > 0 && setCurrentStep(currentStep - 1);
 
-            // Subcomponente de Toggle
-            const ToggleSwitch = ({ checked, onChange }) => (
-                <div onClick={onChange} className={`toggle-container relative inline-flex h-8 w-14 shrink-0 items-center rounded-full cursor-pointer overflow-hidden ${checked ? 'bg-[#FFB85C]' : 'bg-gray-200'}`}>
-                    <span className={`toggle-knob inline-block h-6 w-6 rounded-full bg-white shadow-[0_2px_4px_rgba(0,0,0,0.2)] transform ${checked ? 'translate-x-7' : 'translate-x-1'}`} />
-                </div>
-            );
+            const handleCreateCategory = () => {
+                const name = prompt("Digite o nome do novo Grupo (Categoria):");
+                if (name) {
+                    setCategories([...categories, name.toUpperCase()]);
+                    handleInputChange('grupoCategoria', name.toUpperCase());
+                    handleSave(`Grupo "${name.toUpperCase()}" criado com sucesso!`);
+                }
+            };
 
-            // Círculo decorativo para ícones
             const IconCircle = ({ children }) => (
-                <div className="flex flex-col items-center justify-center h-20 md:h-24 mb-4 md:mb-6">
-                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-gray-100 flex items-center justify-center bg-white shadow-sm overflow-hidden">
+                <div className="flex flex-col items-center justify-center h-20 md:h-24 mb-4">
+                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border-2 border-gray-100 flex items-center justify-center bg-white shadow-sm overflow-hidden text-gray-300">
                         {children}
                     </div>
                 </div>
             );
 
-            // Helper para obter o título do cabeçalho
-            const getHeaderTitle = () => {
-                if (currentStep === 0) return "GERAL";
-                return steps[currentStep].label.toUpperCase();
-            };
-
             return (
-                <div className="min-h-screen flex items-center justify-center text-gray-700 overflow-x-hidden relative p-0 md:p-4">
+                <div className="min-h-screen flex items-center justify-center text-gray-700 overflow-hidden relative">
                     <Toast show={toast.show} message={toast.message} onClose={() => setToast({ show: false, message: "" })} />
                     <PhotoModal isOpen={isPhotoModalOpen} onClose={() => setIsPhotoModalOpen(false)} />
 
                     <div className="bg-white w-full max-w-5xl md:rounded-xl shadow-2xl overflow-hidden min-h-screen md:min-h-[720px] flex flex-col relative">
                         
-                        {/* Cabeçalho */}
-                        <div className="px-4 md:px-8 pt-6 md:pt-8">
+                        {/* Header Fixo */}
+                        <div className="px-4 md:px-8 pt-6 md:pt-8 shrink-0">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#FFB85C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
-                                    <h1 className="text-lg md:text-xl font-medium text-gray-600 uppercase tracking-wider leading-none">
-                                        {getHeaderTitle()}
+                                    <h1 className="text-lg md:text-xl font-bold text-gray-600 tracking-wider">
+                                        {currentStep === 0 ? "Geral" : steps[currentStep].label}
                                     </h1>
                                 </div>
-                                <button 
-                                    onClick={() => handleSave()} 
-                                    className="px-4 md:px-6 py-2 bg-[#FFB85C] text-white rounded-lg font-bold text-xs md:text-sm hover:bg-[#e6a652] transition-all transform active:scale-95 flex items-center gap-2 shadow-md uppercase tracking-wider"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                                <button onClick={() => handleSave()} className="px-4 md:px-6 py-2 bg-[#FFB85C] text-white rounded-lg font-bold text-xs hover:brightness-105 flex items-center gap-2 shadow-md uppercase active:scale-95 transition-all">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                                     <span>Salvar</span>
                                 </button>
                             </div>
-                            <div className="h-[2px] w-full bg-[#FFB85C] opacity-100 mb-4 md:mb-6"></div>
+                            <div className="h-[2px] w-full bg-[#FFB85C] mb-4"></div>
                         </div>
 
-                        {/* Menu de Etapas (Stepper) - Aqui continua "Configuração" */}
-                        <div className="px-4 md:px-8 mb-6 md:mb-8 overflow-x-auto no-scrollbar">
+                        {/* Stepper (Menu) Fixo */}
+                        <div className="px-4 md:px-8 mb-4 shrink-0 overflow-x-auto no-scrollbar">
                             <div className="bg-[#bcbcbc] rounded-full p-1 flex justify-between items-center shadow-inner min-w-[500px] md:min-w-0">
                                 {steps.map((step, index) => (
-                                    <div 
-                                        key={step.id} 
-                                        onClick={() => setCurrentStep(index)}
-                                        className={`flex-1 text-center py-2 px-3 rounded-full transition-all duration-300 text-xs md:text-sm font-semibold cursor-pointer whitespace-nowrap select-none
-                                        ${currentStep === index ? 'bg-white text-gray-700 shadow-md transform scale-[1.02]' : 'text-gray-600 hover:text-gray-800'}`}
-                                    >
+                                    <div key={step.id} onClick={() => setCurrentStep(index)} className={`flex-1 text-center py-2 px-3 rounded-full transition-all duration-300 text-xs font-semibold cursor-pointer ${currentStep === index ? 'bg-white text-gray-700 shadow-md transform scale-[1.02]' : 'text-gray-600 hover:text-gray-800'}`}>
                                         {step.label}
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Área Principal de Conteúdo */}
-                        <div className="flex-grow px-4 md:px-12 flex flex-col items-center justify-start md:justify-center pb-24 pt-4">
-                            
-                            {/* PASSO 0: CONFIGURAÇÃO (Título GERAL) */}
-                            {currentStep === 0 && (
-                                <div className="w-full max-w-4xl flex flex-col items-center">
-                                    <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-16 items-center justify-items-center mb-16">
-                                        <div className="flex flex-col items-center">
-                                            <IconCircle>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-                                            </IconCircle>
-                                            <div className="flex items-center gap-3 h-10">
-                                                <ToggleSwitch checked={formData.habilitarIntegracao} onChange={() => handleToggle('habilitarIntegracao')} />
-                                                <span className="font-semibold text-gray-600 text-[13px] whitespace-nowrap">Habilitar Integração</span>
+                        {/* Área de Conteúdo Deslizante em 50vh */}
+                        <div className="flex-grow relative overflow-hidden flex flex-col items-center justify-center">
+                            <div className="slide-container" style={{ transform: `translateX(-${currentStep * 100}%)` }}>
+                                
+                                {/* PASSO 0: CONFIGURAÇÃO (GERAL) */}
+                                <div className={`step-content items-center justify-center ${currentStep === 0 ? 'active' : ''}`}>
+                                    <div className="h-[50vh] w-full max-w-4xl flex items-center justify-center">
+                                        <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 items-center justify-items-center">
+                                            <div className="flex flex-col items-center">
+                                                <IconCircle><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></IconCircle>
+                                                <div className="flex items-center gap-3">
+                                                    <ToggleSwitch checked={formData.habilitarIntegracao} onChange={() => handleToggle('habilitarIntegracao')} />
+                                                    <span className="font-semibold text-xs text-gray-600">Habilitar Integração</span>
+                                                </div>
                                             </div>
-                                        </div>
 
-                                        <div className="flex flex-col items-center w-full">
-                                            <div className="hidden md:flex h-24 mb-6 items-center justify-center text-gray-300">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
-                                            </div>
-                                            <div className="w-full max-w-[240px]">
-                                                <label className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500 mb-2 uppercase tracking-tighter justify-center md:justify-start">
-                                                    <span>*Grupo (Categoria)</span>
-                                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB85C" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                                </label>
-                                                <div className="relative">
-                                                    <select 
-                                                        className="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm appearance-none bg-white focus:outline-none focus:ring-1 focus:ring-[#FFB85C] cursor-pointer"
-                                                        value={formData.grupoCategoria}
-                                                        onChange={(e) => handleInputChange('grupoCategoria', e.target.value)}
-                                                    >
-                                                        <option value="">Seleciona...</option>
-                                                        <option value="geral">Geral</option>
-                                                        <option value="premium">Premium</option>
-                                                    </select>
-                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                            <div className="flex flex-col items-center w-full max-w-[280px]">
+                                                <IconCircle><svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg></IconCircle>
+                                                <div className="w-full">
+                                                    <label className="text-[10px] font-bold text-gray-400 block mb-1 uppercase tracking-tighter">*Grupo (Categoria)</label>
+                                                    <div className="flex items-center h-[38px]">
+                                                        <div className="relative flex-grow h-full">
+                                                            <select 
+                                                                className="w-full h-full border border-gray-200 border-r-0 rounded-l-lg p-2 text-sm bg-white focus:ring-0 outline-none appearance-none" 
+                                                                value={formData.grupoCategoria} 
+                                                                onChange={(e) => handleInputChange('grupoCategoria', e.target.value)}
+                                                            >
+                                                                {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                                            </select>
+                                                            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="3"><polyline points="6 9 12 15 18 9"/></svg>
+                                                            </div>
+                                                        </div>
+                                                        <button 
+                                                            onClick={handleCreateCategory}
+                                                            className="square-btn border-l-0 rounded-r-lg"
+                                                            title="Criar Novo Grupo"
+                                                        >
+                                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFB85C" strokeWidth="4" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                                        </button>
                                                     </div>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div className="flex flex-col items-center w-full">
-                                            <div className="hidden md:flex h-24 mb-6 items-center justify-center text-gray-300">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                                            </div>
-                                            <div className="w-full max-w-[240px]">
-                                                <label className="text-[11px] font-bold text-gray-500 mb-2 block uppercase tracking-tighter text-center md:text-start">*Disponibilidade</label>
-                                                <div className="relative">
-                                                    <select 
-                                                        className="w-full border border-gray-200 rounded-lg py-2.5 px-3 text-sm appearance-none bg-white focus:outline-none focus:ring-1 focus:ring-[#FFB85C] cursor-pointer"
-                                                        value={formData.disponibilidade}
-                                                        onChange={(e) => handleInputChange('disponibilidade', e.target.value)}
-                                                    >
-                                                        <option value="Disponível">Disponível</option>
-                                                        <option value="Indisponível">Indisponível</option>
-                                                        <option value="Pendente">Pendente</option>
-                                                    </select>
-                                                    <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                            <div className="flex flex-col items-center w-full max-w-[240px]">
+                                                <IconCircle><svg width="50" height="50" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></IconCircle>
+                                                <div className="w-full">
+                                                    <label className="text-[10px] font-bold text-gray-400 block mb-1 uppercase tracking-tighter">*Disponibilidade</label>
+                                                    <div className="relative h-[38px]">
+                                                        <select className="w-full h-full border border-gray-200 rounded-lg p-2 text-sm bg-white focus:ring-0 outline-none appearance-none" value={formData.disponibilidade} onChange={(e) => handleInputChange('disponibilidade', e.target.value)}>
+                                                            <option value="Disponível">Disponível</option>
+                                                            <option value="Indisponível">Indisponível</option>
+                                                        </select>
+                                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="3"><polyline points="6 9 12 15 18 9"/></svg>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-
-                                    {/* Botão de Fotos (Canto) */}
-                                    <div className="w-full flex flex-col items-start border-t border-gray-100 pt-6">
-                                        <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 shadow-sm inline-block">
-                                            <h3 className="text-gray-500 font-bold text-[11px] uppercase tracking-wider mb-3">Fotos do Produto</h3>
-                                            <button 
-                                                onClick={() => setIsPhotoModalOpen(true)}
-                                                className="flex items-center gap-2 px-4 py-2 border-2 border-[#3b82f6] text-[#3b82f6] rounded-lg font-bold text-xs hover:bg-blue-50 transition-all transform active:scale-95 whitespace-nowrap"
-                                            >
-                                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                                                <span>Adicionar Foto</span>
-                                            </button>
+                                    <div className="w-full max-w-4xl px-4 md:px-0">
+                                        <div className="inline-block bg-gray-50 rounded-lg p-4 border border-gray-100 shadow-sm group hover:border-[#3b82f6] transition-colors">
+                                            <h3 className="text-gray-400 font-bold text-[10px] uppercase mb-2">Fotos do Produto</h3>
+                                            <button onClick={() => setIsPhotoModalOpen(true)} className="flex items-center gap-2 px-4 py-2 border-2 border-[#3b82f6] text-[#3b82f6] rounded-lg font-bold text-xs hover:bg-[#3b82f6] hover:text-white transition-all transform active:scale-95"><span>+ Adicionar Foto</span></button>
                                         </div>
                                     </div>
                                 </div>
-                            )}
 
-                            {/* PASSO 1: IDENTIFICAÇÃO */}
-                            {currentStep === 1 && (
-                                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-start max-w-4xl">
-                                    <div className="flex flex-col items-center w-full">
-                                        <IconCircle>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
-                                        </IconCircle>
-                                        <div className="flex items-center gap-3 mb-6 h-10">
-                                            <ToggleSwitch checked={formData.nomePersonalizado} onChange={() => handleToggle('nomePersonalizado')} />
-                                            <span className="font-semibold text-gray-600 text-[13px]">Nome Personalizado</span>
-                                        </div>
-                                        <input 
-                                            type="text" 
-                                            className="w-full bg-gray-50 border border-gray-200 rounded-lg py-3 px-3 text-sm text-gray-500 italic focus:outline-none" 
-                                            value={formData.nomePersonalizadoValor}
-                                            onChange={(e) => handleInputChange('nomePersonalizadoValor', e.target.value)}
-                                        />
-                                    </div>
-
-                                    <div className="flex flex-col items-center w-full text-center">
-                                        <IconCircle>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 13.5V20a2 2 0 0 0 2 2h8.5"/><path d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l1-3.95 5.42-5.44Z"/><path d="M13.5 7L20 7"/><path d="M13.5 11L18 11"/><path d="M13.5 15L16 15"/><path d="M13.5 3L20 3"/></svg>
-                                        </IconCircle>
-                                        <div className="w-full">
-                                            <label className="text-[11px] font-bold text-gray-500 mb-2 block uppercase tracking-tighter">*Descrição do anúncio</label>
-                                            <textarea 
-                                                className="w-full border border-gray-200 rounded-lg py-3 px-4 text-sm h-40 focus:outline-none focus:ring-1 focus:ring-[#FFB85C] resize-none leading-relaxed custom-scrollbar"
-                                                value={formData.descricaoAnuncio}
-                                                onChange={(e) => handleInputChange('descricaoAnuncio', e.target.value)}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* PASSO 2: PRECIFICAÇÃO */}
-                            {currentStep === 2 && (
-                                <div className="w-full max-w-3xl flex flex-col gap-8 md:gap-10">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-end">
-                                        <div className="flex flex-col">
-                                            <div className="flex items-center gap-3 mb-4 h-10">
-                                                <ToggleSwitch checked={formData.precoPersonalizado} onChange={() => handleToggle('precoPersonalizado')} />
-                                                <span className="font-semibold text-gray-600 text-[13px]">Preço Personalizado</span>
+                                {/* PASSO 1: IDENTIFICAÇÃO */}
+                                <div className={`step-content items-center justify-center ${currentStep === 1 ? 'active' : ''}`}>
+                                    <div className="h-[50vh] w-full max-w-4xl flex items-center justify-center">
+                                        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                                            <div className="flex flex-col items-center">
+                                                <IconCircle><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/></svg></IconCircle>
+                                                <div className="flex items-center gap-3 mb-4">
+                                                    <ToggleSwitch checked={formData.nomePersonalizado} onChange={() => handleToggle('nomePersonalizado')} />
+                                                    <span className="font-semibold text-xs text-gray-600">Nome Personalizado</span>
+                                                </div>
+                                                <input type="text" className="w-full border border-gray-200 rounded-lg p-2 text-sm text-gray-400 bg-gray-50 h-[38px]" value={formData.nomePersonalizadoValor} onChange={(e) => handleInputChange('nomePersonalizadoValor', e.target.value)} />
                                             </div>
-                                            <input type="text" className="w-full border border-gray-200 rounded-lg py-3 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#FFB85C]" value={formData.precoValor} onChange={(e) => handleInputChange('precoValor', e.target.value)} />
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <label className="text-[11px] font-bold text-gray-500 mb-2 block uppercase tracking-tighter">*Preço Promoção:</label>
-                                            <input type="text" className="w-full border border-gray-200 rounded-lg py-3 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#FFB85C]" value={formData.precoPromocao} onChange={(e) => handleInputChange('precoPromocao', e.target.value)} />
+                                            <div className="flex flex-col items-center">
+                                                <IconCircle><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 13.5V20a2 2 0 0 0 2 2h8.5"/><path d="M10.42 12.61a2.1 2.1 0 1 1 2.97 2.97L7.95 21 4 22l1-3.95 5.42-5.44Z"/></svg></IconCircle>
+                                                <div className="w-full"><label className="text-[10px] font-bold text-gray-400 block mb-1 uppercase tracking-tighter">*Descrição do Anúncio</label><textarea className="w-full border border-gray-200 rounded-lg p-3 text-sm h-32 resize-none focus:ring-1 focus:ring-[#FFB85C] outline-none" value={formData.descricaoAnuncio} onChange={(e) => handleInputChange('descricaoAnuncio', e.target.value)} /></div>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div className="bg-[#f3f4f6] rounded-2xl p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-8 shadow-sm">
-                                        <div className="flex flex-col">
-                                            <label className="text-[11px] font-bold text-gray-500 mb-3 block uppercase tracking-tighter">Início da Promoção</label>
-                                            <div className="relative bg-white rounded-lg flex border border-gray-200 h-12 overflow-hidden cursor-pointer group">
-                                                <input type="date" className="w-full px-3 text-sm focus:outline-none bg-transparent relative z-10 cursor-pointer" value={formData.dataInicio} onChange={(e) => handleInputChange('dataInicio', e.target.value)} />
-                                                <div className="absolute right-0 top-0 w-12 h-full flex items-center justify-center bg-gray-50 pointer-events-none group-hover:bg-gray-100 transition-colors border-l border-gray-200">
-                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                                </div>
+
+                                {/* PASSO 2: PRECIFICAÇÃO */}
+                                <div className={`step-content items-center justify-center ${currentStep === 2 ? 'active' : ''}`}>
+                                    <div className="h-[50vh] w-full max-w-3xl flex flex-col justify-center gap-8">
+                                        <div className="grid grid-cols-2 gap-6 items-end">
+                                            <div>
+                                                <div className="flex items-center gap-3 mb-3">
+                                                    <ToggleSwitch checked={formData.precoPersonalizado} onChange={() => handleToggle('precoPersonalizado')} />
+                                                    <span className="font-bold text-xs uppercase tracking-tighter text-gray-600">Preço Personalizado</span>
+                                                </div>
+                                                <input type="text" className="w-full border border-gray-200 rounded-lg p-2 h-[38px] focus:ring-1 focus:ring-[#FFB85C] outline-none" value={formData.precoValor} onChange={(e) => handleInputChange('precoValor', e.target.value)} />
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-bold text-gray-400 block mb-3 uppercase tracking-tighter">*Preço Promoção</label>
+                                                <input type="text" className="w-full border border-gray-200 rounded-lg p-2 h-[38px] focus:ring-1 focus:ring-[#FFB85C] outline-none" value={formData.precoPromocao} onChange={(e) => handleInputChange('precoPromocao', e.target.value)} />
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-gray-100 rounded-2xl p-6 md:p-10 grid grid-cols-1 md:grid-cols-2 gap-6 shadow-inner border border-gray-200">
+                                            <div>
+                                                <label className="text-[10px] font-bold text-gray-500 mb-2 block uppercase tracking-tighter">Início da Promoção</label>
+                                                <input type="date" className="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm focus:ring-1 focus:ring-[#FFB85C] outline-none" value={formData.dataInicio} onChange={(e) => handleInputChange('dataInicio', e.target.value)} />
+                                            </div>
+                                            <div>
+                                                <label className="text-[10px] font-bold text-gray-500 mb-2 block uppercase tracking-tighter">Fim da Promoção</label>
+                                                <input type="date" className="w-full bg-white border border-gray-200 rounded-lg p-2 text-sm focus:ring-1 focus:ring-[#FFB85C] outline-none" value={formData.dataFim} onChange={(e) => handleInputChange('dataFim', e.target.value)} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* PASSO 3: ESTOQUE */}
+                                <div className={`step-content items-center justify-center ${currentStep === 3 ? 'active' : ''}`}>
+                                    <div className="h-[50vh] w-full max-w-4xl flex items-center justify-center">
+                                        <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-center">
+                                            <div className="space-y-8 w-full">
+                                                <div className="flex items-center gap-3">
+                                                    <ToggleSwitch checked={formData.sincronizarEstoque} onChange={() => handleToggle('sincronizarEstoque')} />
+                                                    <span className="font-semibold text-xs text-gray-600">Sincronizar Estoque Automaticamente</span>
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-gray-400 block mb-1 uppercase tracking-tighter">*Quantidade por Pedido</label>
+                                                    <input type="text" className="w-full border border-gray-200 rounded-lg p-2 h-[38px] focus:ring-1 focus:ring-[#FFB85C] outline-none transition-all" value={formData.quantidadePedido} onChange={(e) => handleInputChange('quantidadePedido', e.target.value)} />
+                                                </div>
+                                                <div>
+                                                    <label className="text-[10px] font-bold text-gray-400 block mb-1 uppercase tracking-tighter">Canais de Venda: Plug4market</label>
+                                                    <div className="relative h-[38px]">
+                                                        <select className="w-full h-full border border-gray-200 rounded-lg p-2 text-sm bg-white focus:ring-0 outline-none appearance-none" value={formData.canalVenda} onChange={(e) => handleInputChange('canalVenda', e.target.value)}>
+                                                            <option value="">SELECIONE...</option>
+                                                            <option value="shopee">Shopee</option>
+                                                            <option value="amazon">Amazon</option>
+                                                            <option value="mercado_livre">Mercado Livre</option>
+                                                        </select>
+                                                        <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="3"><polyline points="6 9 12 15 18 9"/></svg>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div className="flex flex-col">
-                                            <label className="text-[11px] font-bold text-gray-500 mb-3 block uppercase tracking-tighter">Fim da Promoção</label>
-                                            <div className="relative bg-white rounded-lg flex border border-gray-200 h-12 overflow-hidden cursor-pointer group">
-                                                <input type="date" className="w-full px-3 text-sm focus:outline-none bg-transparent relative z-10 cursor-pointer" value={formData.dataFim} onChange={(e) => handleInputChange('dataFim', e.target.value)} />
-                                                <div className="absolute right-0 top-0 w-12 h-full flex items-center justify-center bg-gray-50 pointer-events-none group-hover:bg-gray-100 transition-colors border-l border-gray-200">
-                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* PASSO 3: ESTOQUE */}
-                            {currentStep === 3 && (
-                                <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-20 items-start max-w-4xl">
-                                    <div className="space-y-10">
-                                        <div className="flex items-center gap-3 h-10">
-                                            <ToggleSwitch checked={formData.sincronizarEstoque} onChange={() => handleToggle('sincronizarEstoque')} />
-                                            <span className="font-semibold text-gray-600 text-[13px]">Sincronizar estoque automaticamente</span>
-                                        </div>
-                                        <div className="w-full">
-                                            <label className="text-[11px] font-bold text-gray-500 mb-2 block uppercase tracking-tighter">*Quantidade Por Pedido:</label>
-                                            <input type="text" className="w-full border border-gray-200 rounded-lg py-3 px-3 text-sm max-w-[340px] focus:outline-none focus:ring-1 focus:ring-[#FFB85C]" value={formData.quantidadePedido} onChange={(e) => handleInputChange('quantidadePedido', e.target.value)} />
-                                        </div>
-                                        <div className="w-full">
-                                            <label className="text-[11px] font-bold text-gray-500 mb-2 block uppercase tracking-tighter">Canais de Venda: Plug4market</label>
-                                            <div className="relative max-w-[340px]">
-                                                <select className="w-full border border-gray-200 rounded-lg py-3 px-3 text-sm appearance-none bg-white focus:outline-none focus:ring-1 focus:ring-[#FFB85C] cursor-pointer" value={formData.canalVenda} onChange={(e) => handleInputChange('canalVenda', e.target.value)}>
-                                                    <option value="">SELECIONE...</option>
-                                                    <option value="shopee">Shopee</option>
-                                                    <option value="amazon">Amazon</option>
-                                                    <option value="mercado_livre">Mercado Livre</option>
-                                                </select>
-                                                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
-                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                                            <div className="w-full">
+                                                <div className="max-w-[320px] mx-auto">
+                                                    <label className="text-[10px] font-bold text-gray-400 block mb-1 uppercase tracking-tighter">Ponto de Ruptura</label>
+                                                    <input type="text" className="w-full border border-gray-200 rounded-lg p-2 h-[38px] focus:ring-1 focus:ring-[#FFB85C] outline-none transition-all" value={formData.pontoRuptura} onChange={(e) => handleInputChange('pontoRuptura', e.target.value)} />
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex flex-col">
-                                        <div className="w-full max-w-[320px]">
-                                            <label className="flex items-center gap-1.5 text-[11px] font-bold text-gray-500 mb-2 uppercase tracking-tighter">
-                                                <span>Ponto de ruptura:</span>
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FFB85C" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                                            </label>
-                                            <input type="text" className="w-full border border-gray-200 rounded-lg py-3 px-3 text-sm focus:outline-none focus:ring-1 focus:ring-[#FFB85C]" value={formData.pontoRuptura} onChange={(e) => handleInputChange('pontoRuptura', e.target.value)} />
-                                        </div>
-                                    </div>
                                 </div>
-                            )}
 
+                            </div>
                         </div>
 
                         {/* Rodapé Fixo */}
-                        <div className="fixed md:static bottom-0 left-0 w-full p-4 md:p-8 flex items-center justify-between md:justify-end gap-3 md:gap-4 border-t border-gray-100 bg-white md:rounded-b-xl z-50">
-                            {currentStep > 0 ? (
-                                <button onClick={prevStep} className="flex-1 md:flex-none px-6 md:px-10 py-3 md:py-2.5 bg-[#bcbcbc] text-white rounded-lg font-bold text-xs md:text-sm hover:bg-gray-400 transition-colors uppercase tracking-wider shadow-sm active:scale-95">
-                                    Voltar
-                                </button>
-                            ) : <div className="hidden md:block"></div>}
-                            <button onClick={nextStep} className="flex-1 md:flex-none px-6 md:px-10 py-3 md:py-2.5 bg-[#26BA9A] text-white rounded-lg font-bold text-xs md:text-sm hover:bg-[#1f9b7f] transition-colors uppercase shadow-md tracking-wider active:scale-95">
+                        <div className="p-4 md:p-8 flex items-center justify-end gap-3 border-t border-gray-100 bg-white shrink-0">
+                            {currentStep > 0 && (
+                                <button onClick={prevStep} className="px-8 py-2.5 bg-gray-300 text-white rounded-lg font-bold text-xs uppercase hover:bg-gray-400 transition-colors active:scale-95 transform">Voltar</button>
+                            )}
+                            <button onClick={nextStep} className={`px-8 py-2.5 text-white rounded-lg font-bold text-xs uppercase transition-all shadow-md transform active:scale-95 ${currentStep === steps.length - 1 ? 'bg-[#FFB85C]' : 'bg-[#26BA9A]'}`}>
                                 {currentStep === steps.length - 1 ? 'Finalizar' : 'Continuar'}
                             </button>
                         </div>
