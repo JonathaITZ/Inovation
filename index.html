@@ -20,6 +20,7 @@
             padding: 0;
             overflow: hidden;
             height: 100vh;
+            height: 100dvh;
         }
 
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -78,9 +79,8 @@
         }
 
         @media (max-width: 768px) {
-            .main-card { min-height: 100vh; border-radius: 0; height: 100vh; }
-            .content-area { flex: 1; height: auto !important; }
-            .step-inner-wrapper { padding-bottom: 120px; }
+            .main-card { min-height: 100dvh; border-radius: 0; height: 100dvh; }
+            .content-area { flex: 1; overflow: hidden; }
         }
     </style>
 </head>
@@ -105,17 +105,15 @@
             };
             if (!show && !isExiting) return null;
             return (
-                <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[6000] flex items-start gap-4 p-5 bg-[#78B16B] text-white rounded-md shadow-2xl w-[90%] max-w-[400px] ${isExiting ? 'animate-toast-out' : 'animate-toast-in'}`}>
-                    <div className="mt-1 flex-shrink-0">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[9999] flex items-start gap-4 p-4 bg-[#78B16B] text-white rounded-xl shadow-2xl w-[92%] max-w-[400px] ${isExiting ? 'animate-toast-out' : 'animate-toast-in'}`}>
+                    <div className="mt-1 shrink-0">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                     </div>
                     <div className="flex-1">
-                        <div className="font-bold text-lg leading-none mb-1 text-white">Sucesso</div>
-                        <div className="text-sm opacity-90 text-white">{message}</div>
+                        <div className="font-bold text-sm text-white uppercase tracking-tight">Sucesso</div>
+                        <div className="text-xs opacity-90 text-white">{message}</div>
                     </div>
-                    <button onClick={handleClose} className="opacity-70 hover:opacity-100 p-1">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                    </button>
+                    <button onClick={handleClose} className="opacity-70 hover:opacity-100"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                 </div>
             );
         };
@@ -151,56 +149,49 @@
                     const response = await fetch('https://fakestoreapi.com/products?limit=12');
                     const data = await response.json();
                     setApiPhotos(data);
-                } catch (error) {
-                    console.error("Erro API:", error);
-                } finally {
-                    setLoading(false);
-                }
+                } catch (error) { console.error("Erro API:", error); } finally { setLoading(false); }
             };
 
             if (!isOpen) return null;
 
-            const resetAndClose = () => {
-                setView('menu');
-                onClose();
-            };
+            const resetAndClose = () => { setView('menu'); onClose(); };
 
             return (
-                <div className="fixed inset-0 z-[5000] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={resetAndClose}>
-                    <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-modal relative" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center justify-between p-5 border-b border-gray-50">
+                <div className="fixed inset-0 z-[8000] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4" onClick={resetAndClose}>
+                    <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-modal relative max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
                             <div className="flex items-center gap-2">
                                 {view !== 'menu' && (
                                     <button onClick={() => setView('menu')} className="p-1 text-gray-400 hover:text-gray-600">
                                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
                                     </button>
                                 )}
-                                <h3 className="text-gray-700 font-bold uppercase tracking-wider text-[11px] ml-1">
-                                    {view === 'menu' ? 'Gestão de Fotos' : view === 'upload' ? 'Carregar Foto' : 'Biblioteca Softcomshop'}
+                                <h3 className="text-gray-700 font-bold uppercase tracking-wider text-[10px] ml-1">
+                                    {view === 'menu' ? 'Gestão de Fotos' : view === 'upload' ? 'Carregar Foto' : 'Biblioteca Softcom'}
                                 </h3>
                             </div>
-                            <button onClick={resetAndClose} className="text-gray-400 p-1"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                            <button onClick={resetAndClose} className="text-gray-400"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
                         </div>
 
-                        <div className="p-8">
+                        <div className="p-6 overflow-y-auto">
                             {view === 'menu' && (
-                                <div className="grid grid-cols-1 gap-4">
-                                    <button onClick={() => setView('upload')} className="flex items-center gap-4 p-5 rounded-2xl border-2 border-dashed border-gray-100 hover:border-blue-200 transition-all text-left group">
-                                        <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-500"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
-                                        <div><p className="font-bold text-gray-700 text-sm">Adicionar Foto</p><p className="text-[10px] text-gray-400 uppercase">Ficheiro Local</p></div>
+                                <div className="grid grid-cols-1 gap-3">
+                                    <button onClick={() => setView('upload')} className="flex items-center gap-4 p-4 rounded-xl border-2 border-dashed border-gray-100 hover:border-blue-200 transition-all text-left">
+                                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
+                                        <div><p className="font-bold text-gray-700 text-sm">Adicionar</p><p className="text-[9px] text-gray-400 uppercase tracking-tighter">Do Dispositivo</p></div>
                                     </button>
-                                    <button onClick={() => setView('library')} className="flex items-center gap-4 p-5 rounded-2xl border border-gray-100 hover:border-orange-200 transition-all text-left group">
-                                        <div className="w-12 h-12 rounded-full bg-orange-50 flex items-center justify-center text-orange-500"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 13h18M9 3v10M15 3v10"/><path d="M12 21V13"/></svg></div>
-                                        <div><p className="font-bold text-gray-700 text-sm">Biblioteca</p><p className="text-[10px] text-gray-400 uppercase">Imagens API</p></div>
+                                    <button onClick={() => setView('library')} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-orange-200 transition-all text-left">
+                                        <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 13h18M9 3v10"/></svg></div>
+                                        <div><p className="font-bold text-gray-700 text-sm">Biblioteca</p><p className="text-[9px] text-gray-400 uppercase tracking-tighter">Procurar na Nuvem</p></div>
                                     </button>
                                 </div>
                             )}
 
                             {view === 'library' && (
-                                <div className="grid grid-cols-3 gap-3 max-h-64 overflow-y-auto pr-1 no-scrollbar">
-                                    {loading ? [1,2,3,4,5,6].map(i => <div key={i} className="aspect-square skeleton rounded-xl"></div>) : 
+                                <div className="grid grid-cols-3 gap-2">
+                                    {loading ? [1,2,3,4,5,6,7,8,9].map(i => <div key={i} className="aspect-square skeleton rounded-xl"></div>) : 
                                         apiPhotos.map(photo => (
-                                            <div key={photo.id} className="aspect-square bg-gray-50 rounded-xl border border-gray-100 overflow-hidden cursor-pointer active:scale-95 transition-all p-2 flex items-center justify-center">
+                                            <div key={photo.id} className="aspect-square bg-white rounded-xl border border-gray-100 overflow-hidden cursor-pointer active:scale-95 transition-all p-2 flex items-center justify-center">
                                                 <img src={photo.image} className="max-w-full max-h-full object-contain" />
                                             </div>
                                         ))
@@ -208,12 +199,17 @@
                                 </div>
                             )}
                             
-                            {view === 'upload' && <div className="py-10 text-center flex flex-col items-center"><div className="w-16 h-16 rounded-full bg-blue-50 flex items-center justify-center text-blue-300 mb-4"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/></svg></div><button className="px-8 py-3 bg-blue-500 text-white rounded-xl font-bold text-[10px] uppercase shadow-md active:scale-95">Escolher Ficheiro</button></div>}
+                            {view === 'upload' && (
+                                <div className="py-6 text-center flex flex-col items-center">
+                                    <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-300 mb-4"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/></svg></div>
+                                    <button className="px-8 py-2.5 bg-blue-500 text-white rounded-lg font-bold text-[10px] uppercase shadow-md active:scale-95">Escolher</button>
+                                </div>
+                            )}
                         </div>
 
-                        <div className="bg-gray-50 p-5 flex items-center justify-between border-t border-gray-100">
-                            <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">API FakeStore</span>
-                            <button onClick={resetAndClose} className="px-8 py-2.5 bg-[#26BA9A] text-white rounded-xl font-bold text-[11px] uppercase active:scale-95">Concluir</button>
+                        <div className="bg-gray-50 p-4 flex items-center justify-between border-t border-gray-100 shrink-0">
+                            <span className="text-[9px] font-bold text-gray-400 uppercase">Máximo 12</span>
+                            <button onClick={resetAndClose} className="px-6 py-2 bg-[#26BA9A] text-white rounded-lg font-bold text-[10px] uppercase active:scale-95">Pronto</button>
                         </div>
                     </div>
                 </div>
@@ -247,16 +243,11 @@
                 canalVenda: ''
             });
 
-            const steps = [
-                { id: 'config', label: 'Configuração' },
-                { id: 'ident', label: 'Identificação' },
-                { id: 'price', label: 'Precificação' },
-                { id: 'stock', label: 'Estoque' }
-            ];
+            const steps = [{ id: 'config', label: 'Config.' }, { id: 'ident', label: 'Ident.' }, { id: 'price', label: 'Preço' }, { id: 'stock', label: 'Estoque' }];
 
             const handleToggle = (field) => setFormData(prev => ({ ...prev, [field]: !prev[field] }));
             const handleInputChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
-            const handleSave = () => setToast({ show: true, message: "Produto editado com sucesso!" });
+            const handleSave = () => setToast({ show: true, message: "Gravado com sucesso!" });
 
             const nextStep = () => currentStep < steps.length - 1 ? setCurrentStep(currentStep + 1) : handleSave();
             const prevStep = () => currentStep > 0 && setCurrentStep(currentStep - 1);
@@ -266,179 +257,166 @@
             const onTouchEnd = () => {
                 if (!touchStartX.current || !touchEndX.current) return;
                 const distance = touchStartX.current - touchEndX.current;
-                if (distance > 70) nextStep();
-                if (distance < -70) prevStep();
-                touchStartX.current = null;
-                touchEndX.current = null;
+                if (distance > 60) nextStep();
+                if (distance < -60) prevStep();
+                touchStartX.current = null; touchEndX.current = null;
             };
 
             const IconCircle = ({ children }) => (
-                <div className="flex flex-col items-center justify-center h-16 md:h-20 mb-3 shrink-0">
-                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-full border border-gray-100 flex items-center justify-center bg-white shadow-sm text-gray-200">
+                <div className="flex flex-col items-center justify-center shrink-0 mb-3">
+                    <div className="w-12 h-12 md:w-16 md:h-16 rounded-full border border-gray-100 flex items-center justify-center bg-white shadow-sm text-gray-300">
                         {children}
                     </div>
                 </div>
             );
 
             return (
-                <div className="min-h-screen flex items-center justify-center md:p-4">
+                <div className="min-h-screen flex items-center justify-center p-0 md:p-4 overflow-hidden">
                     <Toast show={toast.show} message={toast.message} onClose={() => setToast({ show: false, message: "" })} />
                     <PhotoModal isOpen={isPhotoModalOpen} onClose={() => setIsPhotoModalOpen(false)} />
 
-                    <div className="main-card bg-white w-full max-w-5xl md:rounded-3xl shadow-2xl overflow-hidden flex flex-col relative h-full md:h-auto min-h-[720px]">
+                    <div className="main-card bg-white w-full max-w-5xl md:rounded-2xl shadow-2xl flex flex-col relative overflow-hidden">
                         
-                        <div className="px-6 md:px-10 pt-8 shrink-0 z-30 bg-white">
+                        {/* Header */}
+                        <div className="px-6 pt-6 pb-2 shrink-0 z-30 bg-white">
                             <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-3">
-                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#FFB85C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-                                    <h1 className="text-lg md:text-xl font-bold text-gray-700 tracking-tight uppercase">{steps[currentStep].label}</h1>
+                                <div className="flex items-center gap-2">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB85C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                    <h1 className="text-base md:text-xl font-bold text-gray-700 tracking-tight uppercase tracking-widest">{steps[currentStep].label}</h1>
                                 </div>
-                                <button onClick={handleSave} className="px-6 py-2.5 bg-[#FFB85C] text-white rounded-xl font-bold text-[10px] md:text-xs shadow-lg active:scale-95 transition-all flex items-center gap-2">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-                                    <span>Salvar</span>
+                                <button onClick={handleSave} className="p-2 bg-[#FFB85C] text-white rounded-lg shadow-lg active:scale-95 flex items-center gap-1">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+                                    <span className="text-[10px] font-bold uppercase md:block hidden px-1">Salvar</span>
                                 </button>
                             </div>
-                            <div className="h-[2px] w-full bg-[#FFB85C]/30 mb-2 rounded-full"></div>
-                            <div className="flex items-center gap-2 mb-6 ml-1">
-                                <span className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Produto:</span>
-                                <span className="text-gray-500 text-[10px] font-bold italic">Mercadoria Teste</span>
+                            <div className="h-[2px] w-full bg-[#FFB85C]/20 mb-2 rounded-full"></div>
+                            <div className="flex items-center gap-2 mb-2 ml-1">
+                                <span className="text-gray-400 text-[9px] font-bold uppercase tracking-wider">Produto:</span>
+                                <span className="text-gray-500 text-[9px] font-bold italic truncate max-w-[150px] md:max-w-none tracking-tight">Mercadoria Teste</span>
                             </div>
                         </div>
 
-                        <div className="px-6 md:px-10 mb-6 shrink-0 overflow-x-auto no-scrollbar bg-white">
-                            <div className="bg-gray-100 rounded-full p-1.5 flex justify-between items-center shadow-inner min-w-[450px] md:min-w-0">
+                        {/* Stepper */}
+                        <div className="px-6 mb-4 shrink-0 overflow-x-auto no-scrollbar bg-white">
+                            <div className="bg-gray-100 rounded-full p-1 flex justify-between items-center shadow-inner min-w-[340px] md:min-w-0">
                                 {steps.map((step, index) => (
-                                    <div key={step.id} onClick={() => setCurrentStep(index)} className={`flex-1 text-center py-2.5 px-3 rounded-full transition-all duration-400 text-[10px] md:text-xs font-bold cursor-pointer ${currentStep === index ? 'bg-white text-gray-800 shadow-md scale-[1.03]' : 'text-gray-400 hover:text-gray-600'}`}>
+                                    <div key={step.id} onClick={() => setCurrentStep(index)} className={`flex-1 text-center py-2 px-1 rounded-full transition-all duration-400 text-[9px] md:text-xs font-bold cursor-pointer ${currentStep === index ? 'bg-white text-gray-800 shadow-md scale-105' : 'text-gray-400'}`}>
                                         {step.label}
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        <div className="flex-grow relative overflow-hidden flex flex-col content-area" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-                            <div className="slide-container" style={{ transform: `translateX(-${currentStep * 100}%)` }}>
+                        {/* Área de Conteúdo */}
+                        <div className="flex-1 overflow-hidden flex flex-col content-area" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
+                            <div className="slide-container h-full" style={{ transform: `translateX(-${currentStep * 100}%)` }}>
                                 
-                                <div className={`step-content px-6 md:px-12 ${currentStep === 0 ? 'active' : ''}`}>
-                                    <div className="step-inner-wrapper flex-grow flex flex-col items-center justify-center py-6">
-                                        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-16 justify-items-center items-start text-center">
+                                {/* PASSO 0: CONFIGURAÇÃO */}
+                                <div className={`step-content px-6 h-full ${currentStep === 0 ? 'active' : ''}`}>
+                                    <div className="step-inner-wrapper flex-grow flex flex-col items-center justify-start md:justify-center py-6 md:py-10 space-y-8">
+                                        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 justify-items-center items-start text-center">
                                             <div className="flex flex-col items-center w-full max-w-[260px]">
-                                                <IconCircle><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></IconCircle>
+                                                <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></IconCircle>
                                                 <div className="flex items-center justify-center gap-3 w-full">
                                                     <ToggleSwitch checked={formData.habilitarIntegracao} onChange={() => handleToggle('habilitarIntegracao')} />
-                                                    <span className="font-bold text-[11px] md:text-xs text-gray-600 uppercase tracking-tighter">Habilitar Integração</span>
+                                                    <span className="font-bold text-[10px] text-gray-600 uppercase tracking-tighter">Habilitar Integração</span>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-center w-full max-w-[260px]">
-                                                <IconCircle><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></IconCircle>
+                                                <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></IconCircle>
                                                 <div className="w-full">
-                                                    <label className="text-[10px] font-bold text-gray-400 block mb-2 uppercase tracking-tight text-center">Grupo (Categoria)</label>
-                                                    <select className="w-full h-11 border border-gray-100 rounded-xl px-4 text-xs bg-white outline-none font-medium text-gray-600 text-center shadow-sm" value={formData.grupoCategoria} onChange={(e) => handleInputChange('grupoCategoria', e.target.value)}>
+                                                    <label className="text-[9px] font-bold text-gray-400 block mb-2 uppercase text-center tracking-tight">Grupo (Categoria)</label>
+                                                    <select className="w-full h-10 border border-gray-100 rounded-xl px-4 text-xs bg-white outline-none font-medium text-gray-600 text-center shadow-sm" value={formData.grupoCategoria} onChange={(e) => handleInputChange('grupoCategoria', e.target.value)}>
                                                         {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
                                                     </select>
                                                 </div>
                                             </div>
                                             <div className="flex flex-col items-center w-full max-w-[260px]">
-                                                <IconCircle><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></IconCircle>
+                                                <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></IconCircle>
                                                 <div className="w-full">
-                                                    <label className="text-[10px] font-bold text-gray-400 block mb-2 uppercase tracking-tight text-center">Disponibilidade</label>
-                                                    <select className="w-full h-11 border border-gray-100 rounded-xl px-4 text-xs bg-white outline-none text-center font-medium text-gray-600 shadow-sm" value={formData.disponibilidade} onChange={(e) => handleInputChange('disponibilidade', e.target.value)}>
+                                                    <label className="text-[9px] font-bold text-gray-400 block mb-2 uppercase text-center tracking-tight">Disponibilidade</label>
+                                                    <select className="w-full h-10 border border-gray-100 rounded-xl px-4 text-xs bg-white outline-none text-center font-medium text-gray-600 shadow-sm" value={formData.disponibilidade} onChange={(e) => handleInputChange('disponibilidade', e.target.value)}>
                                                         <option value="Disponível">Disponível</option>
                                                         <option value="Indisponível">Indisponível</option>
                                                     </select>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="w-full max-w-4xl mt-16 text-center">
-                                            <div className="inline-block bg-gray-50/50 rounded-2xl p-6 border-2 border-dashed border-gray-100 w-full md:w-auto">
-                                                <h3 className="text-gray-400 font-bold text-[10px] uppercase mb-3 tracking-widest">Gestão de Média</h3>
-                                                <button onClick={() => setIsPhotoModalOpen(true)} className="flex items-center justify-center gap-3 px-10 py-3.5 bg-blue-500 text-white rounded-2xl font-bold text-[10px] uppercase shadow-lg active:scale-95 transition-all w-full md:w-auto group">
-                                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                                                    <span>Fotos do Produto</span>
+                                        <div className="w-full max-w-4xl text-center pb-8 md:pb-0">
+                                            <div className="inline-block bg-gray-50/50 rounded-2xl p-4 border border-gray-100 w-full md:w-auto shadow-sm">
+                                                <h3 className="text-gray-400 font-bold text-[9px] uppercase mb-3 tracking-widest leading-none">Imagens do Produto</h3>
+                                                <button onClick={() => setIsPhotoModalOpen(true)} className="flex items-center justify-center gap-2 px-8 py-3 bg-blue-500 text-white rounded-xl font-bold text-[9px] uppercase shadow-md active:scale-95 transition-all w-full md:w-auto">
+                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                                                    <span>Gerir Fotos</span>
                                                 </button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className={`step-content px-6 md:px-12 ${currentStep === 1 ? 'active' : ''}`}>
-                                    <div className="step-inner-wrapper flex-grow flex flex-col items-center justify-center py-10">
-                                        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-12 justify-items-center text-center">
-                                            <div className="flex flex-col items-center w-full max-w-[380px]">
-                                                <IconCircle><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5v14M6 5v14M9 5v14M12 5v14M15 5v14M18 5v14M21 5v14"/></svg></IconCircle>
-                                                <div className="flex flex-col items-center gap-4 mb-6">
+                                {/* PASSO 1: IDENTIFICAÇÃO */}
+                                <div className={`step-content px-6 h-full ${currentStep === 1 ? 'active' : ''}`}>
+                                    <div className="step-inner-wrapper flex-grow flex flex-col items-center justify-start md:justify-center py-6 md:py-10 space-y-8">
+                                        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 justify-items-center text-center items-start">
+                                            <div className="flex flex-col items-center w-full max-w-[320px]">
+                                                <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5v14M6 5v14M9 5v14M12 5v14M15 5v14M18 5v14M21 5v14"/></svg></IconCircle>
+                                                <div className="flex flex-col items-center gap-3 mb-4">
                                                     <ToggleSwitch checked={formData.nomePersonalizado} onChange={() => handleToggle('nomePersonalizado')} />
-                                                    <span className="font-bold text-[11px] text-gray-600 uppercase tracking-tighter">Nome Personalizado</span>
+                                                    <span className="font-bold text-[10px] text-gray-600 uppercase tracking-tighter">Nome Próprio</span>
                                                 </div>
-                                                <input type="text" className="w-full border border-gray-50 rounded-xl p-3 text-xs bg-gray-50 h-12 text-center font-bold tracking-tight text-gray-400 uppercase shadow-inner" value={formData.nomePersonalizadoValor} readOnly />
+                                                <input type="text" className="w-full border border-gray-50 rounded-xl p-3 text-xs bg-gray-50 h-11 text-center font-bold tracking-tight text-gray-400 uppercase shadow-inner" value={formData.nomePersonalizadoValor} readOnly />
                                             </div>
-                                            <div className="flex flex-col items-center w-full max-w-[380px]">
-                                                <IconCircle><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8l-9-4-9 4v8l9 4 9-4V8z"/><path d="M3 8l9 4 9-4"/><path d="M12 20V12"/></svg></IconCircle>
-                                                <label className="text-[10px] font-bold text-gray-400 block mb-2 uppercase tracking-widest leading-none">* Descrição</label>
-                                                <textarea className="w-full border border-gray-100 rounded-2xl p-4 text-xs h-36 resize-none focus:ring-2 focus:ring-orange-50 outline-none transition-all shadow-sm bg-white" value={formData.descricaoAnuncio} onChange={(e) => handleInputChange('descricaoAnuncio', e.target.value)} />
+                                            <div className="flex flex-col items-center w-full max-w-[320px] pb-10 md:pb-0">
+                                                <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8l-9-4-9 4v8l9 4 9-4V8z"/></svg></IconCircle>
+                                                <label className="text-[9px] font-bold text-gray-400 block mb-2 uppercase tracking-widest leading-none">* Descrição</label>
+                                                <textarea className="w-full border border-gray-100 rounded-xl p-3 text-xs h-32 resize-none focus:ring-1 focus:ring-orange-200 outline-none shadow-sm bg-white" value={formData.descricaoAnuncio} onChange={(e) => handleInputChange('descricaoAnuncio', e.target.value)} />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className={`step-content px-6 md:px-12 ${currentStep === 2 ? 'active' : ''}`}>
-                                    <div className="step-inner-wrapper flex-grow flex flex-col items-center justify-center py-10">
-                                        <div className="w-full max-w-3xl space-y-12">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 justify-items-center text-center">
+                                {/* PASSO 2: PRECIFICAÇÃO */}
+                                <div className={`step-content px-6 h-full ${currentStep === 2 ? 'active' : ''}`}>
+                                    <div className="step-inner-wrapper flex-grow flex flex-col items-center justify-start md:justify-center py-6 md:py-10 space-y-8">
+                                        <div className="w-full max-w-3xl space-y-8">
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 justify-items-center text-center items-start">
                                                 <div className="flex flex-col items-center w-full max-w-[260px]">
-                                                    <IconCircle><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82zM7 7h.01"/></svg></IconCircle>
+                                                    <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10"/></svg></IconCircle>
                                                     <div className="flex flex-col items-center gap-3 mb-3">
                                                         <ToggleSwitch checked={formData.precoPersonalizado} onChange={() => handleToggle('precoPersonalizado')} />
-                                                        <span className="font-bold text-[10px] uppercase text-gray-500 tracking-tighter">Preço Próprio</span>
+                                                        <span className="font-bold text-[10px] uppercase text-gray-500 tracking-tighter">Valor Customizado</span>
                                                     </div>
-                                                    <input type="text" className="w-full border border-gray-100 rounded-xl p-3 h-12 text-sm text-center font-bold text-gray-700 shadow-sm" value={formData.precoValor} onChange={(e) => handleInputChange('precoValor', e.target.value)} />
+                                                    <input type="text" className="w-full border border-gray-100 rounded-xl p-3 h-11 text-xs text-center font-bold text-gray-700 shadow-sm" value={formData.precoValor} onChange={(e) => handleInputChange('precoValor', e.target.value)} />
                                                 </div>
                                                 <div className="flex flex-col items-center w-full max-w-[260px]">
-                                                    <IconCircle><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76z"/></svg></IconCircle>
-                                                    <label className="text-[10px] font-bold text-gray-400 block mb-3 uppercase tracking-widest leading-none">* Preço Promoção</label>
-                                                    <input type="text" className="w-full border border-gray-100 rounded-xl p-3 h-12 text-sm text-center font-bold text-emerald-500 shadow-sm" value={formData.precoPromocao} onChange={(e) => handleInputChange('precoPromocao', e.target.value)} />
+                                                    <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg></IconCircle>
+                                                    <label className="text-[9px] font-bold text-gray-400 block mb-3 uppercase tracking-widest leading-none text-center w-full">* Preço Promo</label>
+                                                    <input type="text" className="w-full border border-gray-100 rounded-xl p-3 h-11 text-xs text-center font-bold text-emerald-500 shadow-sm" value={formData.precoPromocao} onChange={(e) => handleInputChange('precoPromocao', e.target.value)} />
                                                 </div>
                                             </div>
-                                            <div className="bg-orange-50/30 rounded-3xl p-8 grid grid-cols-1 md:grid-cols-2 gap-8 border border-orange-100/50 w-full shadow-inner text-center">
-                                                <div className="w-full"><label className="text-[10px] font-bold text-orange-400 mb-3 block uppercase tracking-widest">Início Promoção</label><input type="date" className="w-full bg-white border border-gray-100 rounded-xl p-3 text-xs h-12 outline-none shadow-sm" value={formData.dataInicio} onChange={(e) => handleInputChange('dataInicio', e.target.value)} /></div>
-                                                <div className="w-full"><label className="text-[10px] font-bold text-orange-400 mb-3 block uppercase tracking-widest">Fim Promoção</label><input type="date" className="w-full bg-white border border-gray-100 rounded-xl p-3 text-xs h-12 outline-none shadow-sm" value={formData.dataFim} onChange={(e) => handleInputChange('dataFim', e.target.value)} /></div>
+                                            <div className="bg-orange-50/20 rounded-2xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6 border border-orange-100/30 w-full text-center pb-12 md:pb-6">
+                                                <div className="w-full"><label className="text-[9px] font-bold text-orange-400 mb-2 block uppercase tracking-widest">Início</label><input type="date" className="w-full bg-white border border-gray-100 rounded-lg p-2 text-[11px] h-10 outline-none shadow-sm" value={formData.dataInicio} onChange={(e) => handleInputChange('dataInicio', e.target.value)} /></div>
+                                                <div className="w-full"><label className="text-[9px] font-bold text-orange-400 mb-2 block uppercase tracking-widest">Fim</label><input type="date" className="w-full bg-white border border-gray-100 rounded-lg p-2 text-[11px] h-10 outline-none shadow-sm" value={formData.dataFim} onChange={(e) => handleInputChange('dataFim', e.target.value)} /></div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div className={`step-content px-4 md:px-12 ${currentStep === 3 ? 'active' : ''}`}>
-                                    <div className="step-inner-wrapper flex-grow flex flex-col items-center justify-center py-10">
-                                        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-12 justify-items-center text-center">
-                                            <div className="space-y-12 flex flex-col items-center w-full max-w-[320px]">
-                                                <div className="flex flex-col items-center w-full">
-                                                    <IconCircle><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 2v6h-6M3 22v-6h6M21 13a9 9 0 1 1-3-7.7L21 8M3 11a9 9 0 0 1 3 7.7L3 16"/></svg></IconCircle>
-                                                    <div className="flex flex-col items-center gap-4">
-                                                        <ToggleSwitch checked={formData.sincronizarEstoque} onChange={() => handleToggle('sincronizarEstoque')} />
-                                                        <span className="font-bold text-[10px] md:text-xs text-gray-500 uppercase tracking-widest text-center leading-tight">Sincronização Ativa</span>
-                                                    </div>
-                                                </div>
-                                                <div className="w-full">
-                                                    <IconCircle><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></IconCircle>
-                                                    <label className="text-[10px] font-bold text-gray-400 block mb-2 uppercase tracking-tight text-center">* Qtd. por Pedido</label>
-                                                    <input type="text" className="w-full border border-gray-100 rounded-xl p-3 h-12 text-sm text-center font-bold text-gray-700 shadow-sm" value={formData.quantidadePedido} onChange={(e) => handleInputChange('quantidadePedido', e.target.value)} />
+                                {/* PASSO 3: ESTOQUE */}
+                                <div className={`step-content px-6 h-full ${currentStep === 3 ? 'active' : ''}`}>
+                                    <div className="step-inner-wrapper flex-grow flex flex-col items-center justify-start md:justify-center py-6 md:py-10 space-y-10">
+                                        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 justify-items-center text-center items-start">
+                                            <div className="flex flex-col items-center w-full max-w-[280px]">
+                                                <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 13a9 9 0 1 1-3-7.7L21 8"/></svg></IconCircle>
+                                                <div className="flex flex-col items-center gap-3">
+                                                    <ToggleSwitch checked={formData.sincronizarEstoque} onChange={() => handleToggle('sincronizarEstoque')} />
+                                                    <span className="font-bold text-[10px] text-gray-500 uppercase tracking-widest leading-tight">Sincronizar</span>
                                                 </div>
                                             </div>
-                                            <div className="space-y-12 flex flex-col items-center w-full max-w-[320px]">
-                                                <div className="w-full">
-                                                    <IconCircle><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></IconCircle>
-                                                    <label className="text-[10px] font-bold text-gray-400 block mb-2 uppercase tracking-tight text-center">Canal Principal</label>
-                                                    <select className="w-full border border-gray-100 rounded-xl p-3 text-xs bg-white h-12 outline-none text-center font-bold text-gray-600 shadow-sm" value={formData.canalVenda} onChange={(e) => handleInputChange('canalVenda', e.target.value)}>
-                                                        <option value="">NENHUM SELECIONADO</option>
-                                                        <option value="shopee">SHOPEE</option>
-                                                        <option value="amazon">AMAZON</option>
-                                                        <option value="mercado_livre">MERCADO LIVRE</option>
-                                                    </select>
-                                                </div>
-                                                <div className="w-full text-center">
-                                                    <IconCircle><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></IconCircle>
-                                                    <label className="text-[10px] font-bold text-gray-400 block mb-2 uppercase tracking-tight">Ponto de Ruptura</label>
-                                                    <input type="text" className="w-full border border-gray-100 rounded-xl p-3 h-12 text-sm text-center font-bold text-red-500 shadow-sm" value={formData.pontoRuptura} onChange={(e) => handleInputChange('pontoRuptura', e.target.value)} />
-                                                </div>
+                                            <div className="w-full max-w-[260px] pb-12 md:pb-0">
+                                                <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></IconCircle>
+                                                <label className="text-[9px] font-bold text-gray-400 block mb-2 uppercase tracking-tight text-center">Qtd. Venda</label>
+                                                <input type="text" className="w-full border border-gray-100 rounded-xl p-3 h-11 text-xs text-center font-bold text-gray-700 shadow-sm outline-none" value={formData.quantidadePedido} onChange={(e) => handleInputChange('quantidadePedido', e.target.value)} />
                                             </div>
                                         </div>
                                     </div>
@@ -446,12 +424,13 @@
                             </div>
                         </div>
 
-                        <div className="p-6 md:p-8 flex items-center justify-end gap-3 border-t border-gray-50 bg-white shrink-0 sticky bottom-0 z-40">
+                        {/* Rodapé Fixo */}
+                        <div className="p-4 md:p-8 flex items-center justify-end gap-3 border-t border-gray-50 bg-white shrink-0 sticky bottom-0 z-40">
                             {currentStep > 0 && (
-                                <button onClick={prevStep} className="px-8 py-3 bg-gray-50 text-gray-500 rounded-xl font-bold text-[11px] uppercase active:scale-95 transition-all">Voltar</button>
+                                <button onClick={prevStep} className="px-6 md:px-8 py-3 bg-gray-50 text-gray-400 rounded-xl font-bold text-[10px] uppercase active:scale-95 transition-all">Voltar</button>
                             )}
-                            <button onClick={nextStep} className={`px-10 py-3 text-white rounded-xl font-bold text-[11px] uppercase transition-all shadow-xl active:scale-95 ${currentStep === steps.length - 1 ? 'bg-[#FFB85C] shadow-orange-100' : 'bg-[#26BA9A] shadow-emerald-100'}`}>
-                                {currentStep === steps.length - 1 ? 'Finalizar' : 'Continuar'}
+                            <button onClick={nextStep} className={`flex-1 md:flex-none px-8 py-3 text-white rounded-xl font-bold text-[10px] uppercase transition-all shadow-xl active:scale-95 ${currentStep === steps.length - 1 ? 'bg-[#FFB85C]' : 'bg-[#26BA9A]'}`}>
+                                {currentStep === steps.length - 1 ? 'Concluir' : 'Próximo'}
                             </button>
                         </div>
 
