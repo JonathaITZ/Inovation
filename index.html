@@ -1,445 +1,561 @@
 <!DOCTYPE html>
-<html lang="pt-pt">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Geral - Integração Marketplace</title>
-    <!-- Bibliotecas Externas -->
-    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Integração Marketplace - Softcom</title>
+    
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        
-        body { 
-            font-family: 'Inter', sans-serif; 
-            -webkit-tap-highlight-color: transparent;
-            background-color: #2c2c2c;
-            margin: 0;
-            padding: 0;
-            overflow: hidden;
-            height: 100vh;
-            height: 100dvh;
-        }
+    
+    <!-- React & ReactDOM CDN -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel para JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
+    <style>
+        /* Estilos para remover scrollbars mas manter funcionalidade */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
         
-        /* --- ANIMAÇÕES --- */
-        .toggle-container { transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), transform 0.15s ease; }
-        .toggle-active-press { transform: scale(0.92); }
-        .toggle-knob { transition: transform 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55), width 0.25s ease; }
-
-        .slide-container {
-            display: flex;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        body { 
+            background-color: #2c2c2c; 
+            margin: 0;
+            padding: 0;
         }
 
-        @keyframes modalIn {
-            0% { transform: scale(0.9) translateY(20px); opacity: 0; }
-            100% { transform: scale(1) translateY(0); opacity: 1; }
-        }
-        .animate-modal { animation: modalIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        /* Animações suaves */
+        .fade-in { animation: fadeIn 0.5s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        @keyframes toastEnter {
-            0% { transform: translate(-50%, -150%); opacity: 0; }
-            70% { transform: translate(-50%, 10%); opacity: 1; }
-            100% { transform: translate(-50%, 0); opacity: 1; }
-        }
-        @keyframes toastExit {
-            0% { transform: translate(-50%, 0); opacity: 1; }
-            100% { transform: translate(-50%, -150%); opacity: 0; }
-        }
-        .animate-toast-in { animation: toastEnter 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
-        .animate-toast-out { animation: toastExit 0.5s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards; }
-
-        .step-content {
-            min-width: 100%;
-            width: 100%;
-            opacity: 0;
-            transition: opacity 0.4s ease;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-        .step-content.active { opacity: 1; }
-
-        .skeleton {
-            background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        @media (max-width: 768px) {
-            .main-card { min-height: 100dvh; border-radius: 0; height: 100dvh; }
-            .content-area { flex: 1; overflow: hidden; }
+        /* Ajuste para altura dinâmica no mobile */
+        .dynamic-height {
+            height: 100vh;
+            height: 100dvh;
         }
     </style>
 </head>
-<body>
+<body className="md:flex md:items-center md:justify-center md:min-h-screen">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect, useRef } = React;
 
-        const Toast = ({ show, message, onClose }) => {
-            const [isExiting, setIsExiting] = useState(false);
-            useEffect(() => {
-                if (show) {
-                    setIsExiting(false);
-                    const timer = setTimeout(() => handleClose(), 3500);
-                    return () => clearTimeout(timer);
-                }
-            }, [show]);
-            const handleClose = () => {
-                setIsExiting(true);
-                setTimeout(() => onClose(), 500);
-            };
-            if (!show && !isExiting) return null;
-            return (
-                <div className={`fixed top-4 left-1/2 -translate-x-1/2 z-[9999] flex items-start gap-4 p-4 bg-[#78B16B] text-white rounded-xl shadow-2xl w-[92%] max-w-[400px] ${isExiting ? 'animate-toast-out' : 'animate-toast-in'}`}>
-                    <div className="mt-1 shrink-0">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                    </div>
-                    <div className="flex-1">
-                        <div className="font-bold text-sm text-white uppercase tracking-tight">Sucesso</div>
-                        <div className="text-xs opacity-90 text-white">{message}</div>
-                    </div>
-                    <button onClick={handleClose} className="opacity-70 hover:opacity-100"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-                </div>
-            );
+        // --- Ícones SVG Internos ---
+        const Icons = {
+            Save: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>,
+            ChevronLeft: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>,
+            ChevronRight: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
+            Plus: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+            Camera: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>,
+            CheckCircle: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>,
+            Folder: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>,
+            Clock: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
+            X: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
+            Package: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.28"/><polyline points="3.29 7 12 12 20.71 7"/><line x1="12" y1="22" x2="12" y2="12"/><path d="M21 8.5V15.5L12 20.5L3 15.5V8.5L12 3.5L21 8.5Z"/></svg>,
+            TrendingUp: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>,
+            Globe: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>,
+            Tag: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>,
+            Search: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
+            Cloud: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M17.5 19a5.5 5.5 0 0 0 0-11h-1.2A7 7 0 1 0 3 13.5V19a2 2 0 0 0 2 2h11.5a1.5 1.5 0 0 0 1-2.5z"/></svg>,
+            Upload: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
+            AlertTriangle: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
+            Sparkles: () => <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="m12 3 1.912 4.912L18.824 9.824 13.912 11.736 12 16.648l-1.912-4.912L5.176 9.824l4.912-1.912L12 3Z"/><path d="m5 3 1 2.5L8.5 6.5 6 7.5 5 10 4 7.5 1.5 6.5 4 5.5 5 3Z"/><path d="m19 14 1 2.5 2.5 1-2.5 1-1 2.5-1-2.5-2.5-1 2.5-1 1-2.5Z"/></svg>
         };
 
-        const ToggleSwitch = ({ checked, onChange }) => {
+        // --- Componentes Auxiliares ---
+
+        const ToggleSwitch = ({ checked, onChange, label }) => {
             const [isPressing, setIsPressing] = useState(false);
+            
             return (
-                <div 
-                    onClick={() => { onChange(); setIsPressing(true); setTimeout(() => setIsPressing(false), 200); }}
-                    className={`toggle-container relative inline-flex h-7 w-12 shrink-0 items-center rounded-full cursor-pointer shadow-inner transition-all
-                        ${checked ? 'bg-[#FFB85C]' : 'bg-gray-200'}
-                        ${isPressing ? 'toggle-active-press' : ''}`}
-                >
-                    <span className={`toggle-knob inline-block h-5 w-5 rounded-full bg-white shadow-md transform transition-transform duration-300
-                        ${checked ? 'translate-x-6' : 'translate-x-1'}`} 
-                    />
+                <div className="flex flex-col items-center gap-2">
+                    <div 
+                        onClick={() => {
+                            onChange();
+                            setIsPressing(true);
+                            setTimeout(() => setIsPressing(false), 200);
+                        }}
+                        className={`relative inline-flex h-7 w-12 shrink-0 cursor-pointer items-center rounded-full transition-all duration-300 shadow-inner
+                            ${checked ? 'bg-[#FFB85C]' : 'bg-gray-200'}
+                            ${isPressing ? 'scale-90' : 'scale-100'}`}
+                    >
+                        <span className={`inline-block h-5 w-5 rounded-full bg-white shadow-md transform transition-transform duration-300
+                            ${checked ? 'translate-x-6' : 'translate-x-1'}`} 
+                        />
+                    </div>
+                    {label && <span className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter text-center">{label}</span>}
                 </div>
             );
         };
 
-        const PhotoModal = ({ isOpen, onClose }) => {
+        const SectionHeader = ({ icon: IconComponent, title }) => (
+            <div className="flex flex-col items-center mb-4 md:mb-6">
+                <div className="w-16 h-16 md:w-20 md:h-20 rounded-full border border-gray-100 bg-white flex items-center justify-center shadow-sm mb-3 text-gray-400">
+                    {IconComponent && <IconComponent />}
+                </div>
+                <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">{title}</h3>
+            </div>
+        );
+
+        // --- Componente Modal de Fotos ---
+
+        const PhotoModal = ({ isOpen, onClose, onUploadSuccess }) => {
             const [view, setView] = useState('menu'); 
-            const [apiPhotos, setApiPhotos] = useState([]);
+            const [photos, setPhotos] = useState([]);
             const [loading, setLoading] = useState(false);
+            const [searchQuery, setSearchQuery] = useState('');
+            
+            const fileInputRef = useRef(null);
 
             useEffect(() => {
-                if (view === 'library' && apiPhotos.length === 0) fetchLibraryPhotos();
-            }, [view]);
-
-            const fetchLibraryPhotos = async () => {
-                setLoading(true);
-                try {
-                    const response = await fetch('https://fakestoreapi.com/products?limit=12');
-                    const data = await response.json();
-                    setApiPhotos(data);
-                } catch (error) { console.error("Erro API:", error); } finally { setLoading(false); }
-            };
+                if (view === 'library' && photos.length === 0) {
+                    setLoading(true);
+                    fetch('https://fakestoreapi.com/products?limit=20')
+                        .then(res => res.json())
+                        .then(data => {
+                            setPhotos(data);
+                            setLoading(false);
+                        })
+                        .catch(() => setLoading(false));
+                }
+            }, [view, photos.length]);
 
             if (!isOpen) return null;
 
-            const resetAndClose = () => { setView('menu'); onClose(); };
+            const filteredPhotos = photos.filter(p => 
+                p.title.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+
+            const resetAndClose = () => {
+                setView('menu');
+                setSearchQuery('');
+                onClose();
+            };
+
+            const handleFileChange = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    onUploadSuccess(`Ficheiro "${file.name}" carregado com sucesso!`);
+                    resetAndClose();
+                }
+            };
+
+            const triggerFileInput = () => {
+                if (fileInputRef.current) {
+                    fileInputRef.current.click();
+                }
+            };
 
             return (
-                <div className="fixed inset-0 z-[8000] flex items-center justify-center bg-black/75 backdrop-blur-sm p-4" onClick={resetAndClose}>
-                    <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-modal relative max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-                        <div className="flex items-center justify-between p-4 border-b border-gray-100 shrink-0">
+                <div className="fixed inset-0 z-[1000] bg-black/60 backdrop-blur-sm flex items-end md:items-center justify-center p-0 md:p-4">
+                    <div className="bg-white w-full md:w-[448px] rounded-t-3xl md:rounded-2xl shadow-2xl overflow-hidden flex flex-col h-[85vh] md:h-auto md:max-h-[90vh]">
+                        
+                        <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            style={{ display: 'none' }} 
+                            accept="image/*" 
+                            onChange={handleFileChange}
+                        />
+
+                        <div className="flex items-center justify-between p-4 border-b shrink-0">
                             <div className="flex items-center gap-2">
                                 {view !== 'menu' && (
-                                    <button onClick={() => setView('menu')} className="p-1 text-gray-400 hover:text-gray-600">
-                                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+                                    <button onClick={() => setView('menu')} className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                                        <Icons.ChevronLeft />
                                     </button>
                                 )}
-                                <h3 className="text-gray-700 font-bold uppercase tracking-wider text-[10px] ml-1">
-                                    {view === 'menu' ? 'Gestão de Fotos' : view === 'upload' ? 'Carregar Foto' : 'Biblioteca Softcom'}
-                                </h3>
+                                <span className="text-xs font-bold text-gray-500 uppercase tracking-widest">
+                                    {view === 'menu' ? 'Gestão de Fotos' : 'Biblioteca via API Softcom'}
+                                </span>
                             </div>
-                            <button onClick={resetAndClose} className="text-gray-400"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
+                            <button onClick={resetAndClose} className="text-gray-400 p-1 hover:text-gray-600 transition-colors"><Icons.X /></button>
                         </div>
 
-                        <div className="p-6 overflow-y-auto">
-                            {view === 'menu' && (
-                                <div className="grid grid-cols-1 gap-3">
-                                    <button onClick={() => setView('upload')} className="flex items-center gap-4 p-4 rounded-xl border-2 border-dashed border-gray-100 hover:border-blue-200 transition-all text-left">
-                                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-500 shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></div>
-                                        <div><p className="font-bold text-gray-700 text-sm">Adicionar</p><p className="text-[9px] text-gray-400 uppercase tracking-tighter">Do Dispositivo</p></div>
+                        <div className="flex-1 overflow-y-auto no-scrollbar">
+                            {view === 'menu' ? (
+                                <div className="p-6 md:p-8 flex flex-col gap-4">
+                                    <button 
+                                        onClick={() => setView('library')}
+                                        className="w-full flex items-center gap-4 p-5 rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-orange-50 hover:border-orange-100 transition-all text-left group"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center text-orange-400 group-hover:scale-110 transition-transform">
+                                            <Icons.Cloud />
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-gray-700 text-sm">Biblioteca via API</p>
+                                            <p className="text-[9px] text-gray-400 uppercase tracking-widest">Consultar Nuvem Softcom</p>
+                                        </div>
                                     </button>
-                                    <button onClick={() => setView('library')} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 hover:border-orange-200 transition-all text-left">
-                                        <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 shrink-0"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 13h18M9 3v10"/></svg></div>
-                                        <div><p className="font-bold text-gray-700 text-sm">Biblioteca</p><p className="text-[9px] text-gray-400 uppercase tracking-tighter">Procurar na Nuvem</p></div>
+
+                                    <button 
+                                        onClick={triggerFileInput}
+                                        className="w-full flex items-center gap-4 p-5 rounded-2xl border-2 border-dashed border-gray-100 hover:border-blue-100 hover:bg-blue-50/30 transition-all text-left group"
+                                    >
+                                        <div className="w-12 h-12 rounded-full bg-white shadow-sm flex items-center justify-center text-blue-500 group-hover:scale-110 transition-transform">
+                                            <Icons.Upload />
+                                        </div>
+                                        <div>
+                                            <p className="font-bold text-gray-700 text-sm">Carregar Novo</p>
+                                            <p className="text-[9px] text-gray-400 uppercase tracking-widest">Do seu dispositivo</p>
+                                        </div>
                                     </button>
                                 </div>
-                            )}
+                            ) : (
+                                <div className="p-5 space-y-5">
+                                    <div className="bg-blue-50/50 p-3 rounded-xl border border-blue-100">
+                                        <p className="text-[10px] text-blue-600 leading-relaxed font-medium">
+                                            Pesquise e selecione imagens diretamente da base de dados sincronizada com o servidor Softcomshop.
+                                        </p>
+                                    </div>
 
-                            {view === 'library' && (
-                                <div className="grid grid-cols-3 gap-2">
-                                    {loading ? [1,2,3,4,5,6,7,8,9].map(i => <div key={i} className="aspect-square skeleton rounded-xl"></div>) : 
-                                        apiPhotos.map(photo => (
-                                            <div key={photo.id} className="aspect-square bg-white rounded-xl border border-gray-100 overflow-hidden cursor-pointer active:scale-95 transition-all p-2 flex items-center justify-center">
-                                                <img src={photo.image} className="max-w-full max-h-full object-contain" />
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
+                                            <Icons.Search />
+                                        </div>
+                                        <input 
+                                            type="text" 
+                                            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-xs outline-none focus:ring-1 focus:ring-orange-300 transition-all"
+                                            placeholder="Pesquisar mercadoria..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-3 gap-3 pb-4">
+                                        {loading ? (
+                                            Array(6).fill(0).map((_, i) => (
+                                                <div key={i} className="aspect-square bg-gray-100 animate-pulse rounded-xl" />
+                                            ))
+                                        ) : filteredPhotos.length > 0 ? (
+                                            filteredPhotos.map(photo => (
+                                                <div key={photo.id} className="aspect-square bg-white border border-gray-100 rounded-xl p-2 flex flex-col items-center justify-center shadow-sm hover:border-orange-200 active:scale-95 transition-all cursor-pointer">
+                                                    <img src={photo.image} alt="" className="max-w-full max-h-[70%] object-contain mb-1" />
+                                                    <span className="text-[7px] text-gray-400 font-bold uppercase truncate w-full text-center px-1">{photo.title}</span>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="col-span-3 py-10 text-center text-gray-400 italic text-xs">
+                                                Nenhum resultado para "{searchQuery}"
                                             </div>
-                                        ))
-                                    }
-                                </div>
-                            )}
-                            
-                            {view === 'upload' && (
-                                <div className="py-6 text-center flex flex-col items-center">
-                                    <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-blue-300 mb-4"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/></svg></div>
-                                    <button className="px-8 py-2.5 bg-blue-500 text-white rounded-lg font-bold text-[10px] uppercase shadow-md active:scale-95">Escolher</button>
+                                        )}
+                                    </div>
                                 </div>
                             )}
                         </div>
 
-                        <div className="bg-gray-50 p-4 flex items-center justify-between border-t border-gray-100 shrink-0">
-                            <span className="text-[9px] font-bold text-gray-400 uppercase">Máximo 12</span>
-                            <button onClick={resetAndClose} className="px-6 py-2 bg-[#26BA9A] text-white rounded-lg font-bold text-[10px] uppercase active:scale-95">Pronto</button>
+                        <div className="bg-gray-50 p-4 flex items-center justify-between border-t shrink-0">
+                            <span className="text-[10px] font-bold text-gray-400 uppercase">
+                                {view === 'library' ? `Itens: ${filteredPhotos.length}` : 'Até 12 Fotos'}
+                            </span>
+                            <button onClick={resetAndClose} className="px-8 py-2.5 bg-[#26BA9A] text-white rounded-xl font-bold text-[11px] uppercase shadow-lg active:scale-95 transition-all">
+                                Concluir
+                            </button>
                         </div>
                     </div>
                 </div>
             );
         };
 
-        const App = () => {
+        // --- Componente Principal ---
+
+        function App() {
             const [currentStep, setCurrentStep] = useState(0);
-            const [toast, setToast] = useState({ show: false, message: "" });
+            const [toastConfig, setToastConfig] = useState({ show: false, message: "" });
             const [isPhotoModalOpen, setIsPhotoModalOpen] = useState(false);
             const [categories, setCategories] = useState(['PERFUME', 'MAQUILHAGEM', 'CORPO']);
             
-            const touchStartX = useRef(null);
-            const touchEndX = useRef(null);
-
             const [formData, setFormData] = useState({
-                habilitarIntegracao: true,
+                habilitarIntegracao: false,
                 grupoCategoria: 'PERFUME',
                 disponibilidade: 'Disponível',
                 nomePersonalizado: false,
-                nomePersonalizadoValor: 'ACCORDES 80ML',
-                descricaoAnuncio: 'Sem descrição definida',
+                nomePersonalizadoValor: '#1700100#17049010#TRU LC BRANCO 12,5',
+                descricaoAnuncio: 'Escolha uma descrição atrativa para o seu cliente',
                 precoPersonalizado: false,
                 precoValor: '144,99',
                 precoPromocao: '0,00',
                 dataInicio: '',
                 dataFim: '',
-                sincronizarEstoque: true,
-                pontoRuptura: '0,00',
+                sincronizarEstoque: false,
+                pontoRuptura: '5,00',
                 quantidadePedido: '1,00',
                 canalVenda: ''
             });
 
-            const steps = [{ id: 'config', label: 'Config.' }, { id: 'ident', label: 'Ident.' }, { id: 'price', label: 'Preço' }, { id: 'stock', label: 'Estoque' }];
+            const steps = [
+                { id: 'configuracao', label: 'Configuração' },
+                { id: 'identificacao', label: 'Identificação' },
+                { id: 'precificacao', label: 'Precificação' },
+                { id: 'estoque', label: 'Estoque' }
+            ];
 
-            const handleToggle = (field) => setFormData(prev => ({ ...prev, [field]: !prev[field] }));
-            const handleInputChange = (field, value) => setFormData(prev => ({ ...prev, [field]: value }));
-            const handleSave = () => setToast({ show: true, message: "Gravado com sucesso!" });
-
-            const nextStep = () => currentStep < steps.length - 1 ? setCurrentStep(currentStep + 1) : handleSave();
-            const prevStep = () => currentStep > 0 && setCurrentStep(currentStep - 1);
-
-            const onTouchStart = (e) => { touchStartX.current = e.targetTouches[0].clientX; };
-            const onTouchMove = (e) => { touchEndX.current = e.targetTouches[0].clientX; };
-            const onTouchEnd = () => {
-                if (!touchStartX.current || !touchEndX.current) return;
-                const distance = touchStartX.current - touchEndX.current;
-                if (distance > 60) nextStep();
-                if (distance < -60) prevStep();
-                touchStartX.current = null; touchEndX.current = null;
+            const triggerToast = (message) => {
+                setToastConfig({ show: true, message });
+                setTimeout(() => setToastConfig({ show: false, message: "" }), 3000);
             };
 
-            const IconCircle = ({ children }) => (
-                <div className="flex flex-col items-center justify-center shrink-0 mb-3">
-                    <div className="w-12 h-12 md:w-16 md:h-16 rounded-full border border-gray-100 flex items-center justify-center bg-white shadow-sm text-gray-300">
-                        {children}
-                    </div>
-                </div>
-            );
+            const handleSave = () => {
+                triggerToast("Configurações guardadas com sucesso!");
+            };
+
+            const nextStep = () => {
+                if (currentStep < steps.length - 1) setCurrentStep(prev => prev + 1);
+                else handleSave();
+            };
+
+            const prevStep = () => {
+                if (currentStep > 0) setCurrentStep(prev => prev - 1);
+            };
 
             return (
-                <div className="min-h-screen flex items-center justify-center p-0 md:p-4 overflow-hidden">
-                    <Toast show={toast.show} message={toast.message} onClose={() => setToast({ show: false, message: "" })} />
-                    <PhotoModal isOpen={isPhotoModalOpen} onClose={() => setIsPhotoModalOpen(false)} />
+                <div className="dynamic-height md:min-h-screen bg-[#2c2c2c] flex items-center justify-center md:p-4 overflow-hidden font-sans">
+                    
+                    {/* Notificação (Toast) */}
+                    <div className={`fixed top-6 left-1/2 -translate-x-1/2 z-[2000] w-[90%] md:w-[380px] transition-all duration-500 transform
+                        ${toastConfig.show ? 'translate-y-0 opacity-100' : '-translate-y-24 opacity-0'}`}>
+                        <div className="bg-[#78B16B] text-white p-4 rounded-xl shadow-2xl flex items-center gap-3">
+                            <Icons.CheckCircle />
+                            <div>
+                                <p className="font-bold text-sm">Sucesso</p>
+                                <p className="text-xs opacity-90">{toastConfig.message}</p>
+                            </div>
+                        </div>
+                    </div>
 
-                    <div className="main-card bg-white w-full max-w-5xl md:rounded-2xl shadow-2xl flex flex-col relative overflow-hidden">
+                    {/* Modal de Fotos Integrado */}
+                    <PhotoModal 
+                        isOpen={isPhotoModalOpen} 
+                        onClose={() => setIsPhotoModalOpen(false)} 
+                        onUploadSuccess={triggerToast}
+                    />
+
+                    {/* Card Principal - Responsivo */}
+                    <div className="bg-white w-full md:w-[1024px] md:rounded-2xl shadow-2xl h-full md:h-[750px] flex flex-col relative overflow-hidden fade-in">
                         
-                        {/* Header */}
-                        <div className="px-6 pt-6 pb-2 shrink-0 z-30 bg-white">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="flex items-center gap-2">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFB85C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-                                    <h1 className="text-base md:text-xl font-bold text-gray-700 tracking-tight uppercase tracking-widest">{steps[currentStep].label}</h1>
+                        {/* Cabeçalho */}
+                        <div className="shrink-0 bg-white z-40">
+                            <div className="px-4 md:px-6 py-4 flex items-center justify-between border-b border-gray-50">
+                                <div className="flex items-center gap-2 md:gap-3">
+                                    <div className="text-[#FFB85C]"><Icons.Globe /></div>
+                                    <h1 className="text-sm md:text-base font-bold text-gray-700 tracking-tight uppercase">Integração Marketplace</h1>
                                 </div>
-                                <button onClick={handleSave} className="p-2 bg-[#FFB85C] text-white rounded-lg shadow-lg active:scale-95 flex items-center gap-1">
-                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
-                                    <span className="text-[10px] font-bold uppercase md:block hidden px-1">Salvar</span>
+                                <button onClick={handleSave} className="flex items-center gap-2 bg-[#FFB85C] text-white px-4 md:px-5 py-2 rounded-xl font-bold text-[10px] uppercase shadow-lg shadow-orange-100 active:scale-95 transition-all">
+                                    <Icons.Save />
+                                    <span className="hidden md:inline">Guardar</span>
                                 </button>
                             </div>
-                            <div className="h-[2px] w-full bg-[#FFB85C]/20 mb-2 rounded-full"></div>
-                            <div className="flex items-center gap-2 mb-2 ml-1">
-                                <span className="text-gray-400 text-[9px] font-bold uppercase tracking-wider">Produto:</span>
-                                <span className="text-gray-500 text-[9px] font-bold italic truncate max-w-[150px] md:max-w-none tracking-tight">Mercadoria Teste</span>
+
+                            <div className="h-[2px] w-full bg-[#FFB85C] mb-2"></div>
+                            
+                            <div className="px-4 md:px-6 py-1 flex items-center gap-1.5 mb-2">
+                                <span className="text-gray-400 text-[9px] md:text-[10px] font-medium tracking-tight text-center">Produto:</span>
+                                <span className="text-gray-500 text-[9px] md:text-[10px] font-bold italic truncate">Mercadoria Teste Softcomshop</span>
                             </div>
                         </div>
 
-                        {/* Stepper */}
-                        <div className="px-6 mb-4 shrink-0 overflow-x-auto no-scrollbar bg-white">
-                            <div className="bg-gray-100 rounded-full p-1 flex justify-between items-center shadow-inner min-w-[340px] md:min-w-0">
+                        {/* Menu de Passos - Scrollável no Mobile */}
+                        <div className="px-4 md:px-8 py-2 shrink-0 z-20 bg-white">
+                            <div className="bg-[#f0f0f0] rounded-full p-1 md:p-1.5 flex justify-between items-center shadow-inner overflow-x-auto no-scrollbar">
                                 {steps.map((step, index) => (
-                                    <div key={step.id} onClick={() => setCurrentStep(index)} className={`flex-1 text-center py-2 px-1 rounded-full transition-all duration-400 text-[9px] md:text-xs font-bold cursor-pointer ${currentStep === index ? 'bg-white text-gray-800 shadow-md scale-105' : 'text-gray-400'}`}>
+                                    <div 
+                                        key={step.id} 
+                                        onClick={() => setCurrentStep(index)} 
+                                        className={`flex-1 min-w-[100px] md:min-w-0 text-center py-2 px-3 rounded-full transition-all duration-300 text-[10px] md:text-xs font-bold cursor-pointer whitespace-nowrap
+                                            ${currentStep === index ? 'bg-white text-gray-800 shadow-md scale-[1.03]' : 'text-gray-500 hover:text-gray-700'}`}
+                                    >
                                         {step.label}
                                     </div>
                                 ))}
                             </div>
                         </div>
 
-                        {/* Área de Conteúdo */}
-                        <div className="flex-1 overflow-hidden flex flex-col content-area" onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-                            <div className="slide-container h-full" style={{ transform: `translateX(-${currentStep * 100}%)` }}>
+                        {/* Área de Conteúdo Slidable */}
+                        <div className="flex-1 relative overflow-hidden">
+                            <div className="flex h-full transition-transform duration-500 ease-out" style={{ transform: `translateX(-${currentStep * 100}%)` }}>
                                 
                                 {/* PASSO 0: CONFIGURAÇÃO */}
-                                <div className={`step-content px-6 h-full ${currentStep === 0 ? 'active' : ''}`}>
-                                    <div className="step-inner-wrapper flex-grow flex flex-col items-center justify-start md:justify-center py-6 md:py-10 space-y-8">
-                                        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 justify-items-center items-start text-center">
-                                            <div className="flex flex-col items-center w-full max-w-[260px]">
-                                                <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></IconCircle>
-                                                <div className="flex items-center justify-center gap-3 w-full">
-                                                    <ToggleSwitch checked={formData.habilitarIntegracao} onChange={() => handleToggle('habilitarIntegracao')} />
-                                                    <span className="font-bold text-[10px] text-gray-600 uppercase tracking-tighter">Habilitar Integração</span>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col items-center w-full max-w-[260px]">
-                                                <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></IconCircle>
-                                                <div className="w-full">
-                                                    <label className="text-[9px] font-bold text-gray-400 block mb-2 uppercase text-center tracking-tight">Grupo (Categoria)</label>
-                                                    <select className="w-full h-10 border border-gray-100 rounded-xl px-4 text-xs bg-white outline-none font-medium text-gray-600 text-center shadow-sm" value={formData.grupoCategoria} onChange={(e) => handleInputChange('grupoCategoria', e.target.value)}>
-                                                        {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-                                                    </select>
-                                                </div>
-                                            </div>
-                                            <div className="flex flex-col items-center w-full max-w-[260px]">
-                                                <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></IconCircle>
-                                                <div className="w-full">
-                                                    <label className="text-[9px] font-bold text-gray-400 block mb-2 uppercase text-center tracking-tight">Disponibilidade</label>
-                                                    <select className="w-full h-10 border border-gray-100 rounded-xl px-4 text-xs bg-white outline-none text-center font-medium text-gray-600 shadow-sm" value={formData.disponibilidade} onChange={(e) => handleInputChange('disponibilidade', e.target.value)}>
-                                                        <option value="Disponível">Disponível</option>
-                                                        <option value="Indisponível">Indisponível</option>
-                                                    </select>
-                                                </div>
-                                            </div>
+                                <div className="min-w-full h-full flex flex-col items-center justify-center p-6 overflow-y-auto no-scrollbar">
+                                    <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 justify-items-center text-center">
+                                        <div className="flex flex-col items-center w-full md:w-[240px]">
+                                            <SectionHeader icon={Icons.CheckCircle} title="Integração" />
+                                            <ToggleSwitch 
+                                                label="Habilitar Integração" 
+                                                checked={formData.habilitarIntegracao} 
+                                                onChange={() => setFormData(f => ({...f, habilitarIntegracao: !f.habilitarIntegracao}))} 
+                                            />
                                         </div>
-                                        <div className="w-full max-w-4xl text-center pb-8 md:pb-0">
-                                            <div className="inline-block bg-gray-50/50 rounded-2xl p-4 border border-gray-100 w-full md:w-auto shadow-sm">
-                                                <h3 className="text-gray-400 font-bold text-[9px] uppercase mb-3 tracking-widest leading-none">Imagens do Produto</h3>
-                                                <button onClick={() => setIsPhotoModalOpen(true)} className="flex items-center justify-center gap-2 px-8 py-3 bg-blue-500 text-white rounded-xl font-bold text-[9px] uppercase shadow-md active:scale-95 transition-all w-full md:w-auto">
-                                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                                                    <span>Gerir Fotos</span>
+
+                                        <div className="flex flex-col items-center w-full md:w-[240px]">
+                                            <SectionHeader icon={Icons.Folder} title="Categoria" />
+                                            <div className="flex items-center h-10 w-full">
+                                                <select 
+                                                    className="flex-grow h-full border border-gray-200 rounded-l-xl px-3 text-xs bg-white outline-none"
+                                                    value={formData.grupoCategoria}
+                                                    onChange={(e) => setFormData(f => ({...f, grupoCategoria: e.target.value}))}
+                                                >
+                                                    {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                                                </select>
+                                                <button 
+                                                    onClick={() => {const n = prompt("Novo Grupo:"); n && setCategories([...categories, n.toUpperCase()])}}
+                                                    className="w-10 h-10 border border-l-0 border-gray-200 rounded-r-xl bg-white flex items-center justify-center text-orange-400 font-bold active:scale-90 transition-all"
+                                                >
+                                                    <Icons.Plus />
                                                 </button>
                                             </div>
                                         </div>
+
+                                        <div className="flex flex-col items-center w-full md:w-[240px]">
+                                            <SectionHeader icon={Icons.Clock} title="Disponibilidade" />
+                                            <select 
+                                                className="w-full h-10 border border-gray-200 rounded-xl px-3 text-xs bg-white outline-none"
+                                                value={formData.disponibilidade}
+                                                onChange={(e) => setFormData(f => ({...f, disponibilidade: e.target.value}))}
+                                            >
+                                                <option value="Disponível">Disponível</option>
+                                                <option value="Indisponível">Indisponível</option>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div className="mt-8 md:mt-12 w-full md:w-[448px] bg-gray-50/50 rounded-[2rem] p-6 md:p-8 border-2 border-dashed border-gray-100 flex flex-col items-center">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase mb-4 tracking-widest leading-none">Gestão de Média</span>
+                                        <button onClick={() => setIsPhotoModalOpen(true)} className="flex items-center gap-2 px-10 py-4 bg-blue-500 text-white rounded-2xl font-bold text-[11px] uppercase shadow-lg active:scale-95 transition-all leading-none">
+                                            <Icons.Camera />
+                                            <span>Fotos do Produto</span>
+                                        </button>
                                     </div>
                                 </div>
 
                                 {/* PASSO 1: IDENTIFICAÇÃO */}
-                                <div className={`step-content px-6 h-full ${currentStep === 1 ? 'active' : ''}`}>
-                                    <div className="step-inner-wrapper flex-grow flex flex-col items-center justify-start md:justify-center py-6 md:py-10 space-y-8">
-                                        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16 justify-items-center text-center items-start">
-                                            <div className="flex flex-col items-center w-full max-w-[320px]">
-                                                <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 5v14M6 5v14M9 5v14M12 5v14M15 5v14M18 5v14M21 5v14"/></svg></IconCircle>
-                                                <div className="flex flex-col items-center gap-3 mb-4">
-                                                    <ToggleSwitch checked={formData.nomePersonalizado} onChange={() => handleToggle('nomePersonalizado')} />
-                                                    <span className="font-bold text-[10px] text-gray-600 uppercase tracking-tighter">Nome Próprio</span>
+                                <div className="min-w-full h-full flex flex-col items-center justify-center p-6 overflow-y-auto no-scrollbar">
+                                    <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-10 justify-items-center text-center">
+                                        <div className="flex flex-col items-center w-full md:w-[360px]">
+                                            <SectionHeader icon={Icons.Tag} title="Personalização" />
+                                            <ToggleSwitch 
+                                                label="Nome Personalizado" 
+                                                checked={formData.nomePersonalizado} 
+                                                onChange={() => setFormData(f => ({...f, nomePersonalizado: !f.nomePersonalizado}))} 
+                                            />
+                                            <input 
+                                                type="text" 
+                                                className="mt-6 w-full border border-gray-100 rounded-xl p-3 text-xs bg-gray-50 text-center font-bold text-gray-400 uppercase"
+                                                value={formData.nomePersonalizadoValor}
+                                                readOnly
+                                            />
+                                        </div>
+                                        <div className="flex flex-col items-center w-full md:w-[360px]">
+                                            <SectionHeader icon={Icons.Package} title="Descrição" />
+                                            <div className="w-full flex flex-col gap-2">
+                                                <div className="flex justify-between items-center px-2">
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Texto do Anúncio</span>
+                                                    <button 
+                                                        className="flex items-center gap-1.5 px-2.5 py-1 bg-violet-50 text-violet-600 rounded-full text-[9px] font-bold uppercase tracking-tighter border border-violet-100 hover:bg-violet-100 active:scale-95 transition-all"
+                                                        onClick={() => triggerToast("IA processando sua descrição...")}
+                                                    >
+                                                        <Icons.Sparkles />
+                                                        Gere com IA
+                                                    </button>
                                                 </div>
-                                                <input type="text" className="w-full border border-gray-50 rounded-xl p-3 text-xs bg-gray-50 h-11 text-center font-bold tracking-tight text-gray-400 uppercase shadow-inner" value={formData.nomePersonalizadoValor} readOnly />
-                                            </div>
-                                            <div className="flex flex-col items-center w-full max-w-[320px] pb-10 md:pb-0">
-                                                <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8l-9-4-9 4v8l9 4 9-4V8z"/></svg></IconCircle>
-                                                <label className="text-[9px] font-bold text-gray-400 block mb-2 uppercase tracking-widest leading-none">* Descrição</label>
-                                                <textarea className="w-full border border-gray-100 rounded-xl p-3 text-xs h-32 resize-none focus:ring-1 focus:ring-orange-200 outline-none shadow-sm bg-white" value={formData.descricaoAnuncio} onChange={(e) => handleInputChange('descricaoAnuncio', e.target.value)} />
+                                                <textarea 
+                                                    className="w-full border border-gray-200 rounded-2xl p-4 text-xs h-32 md:h-36 outline-none focus:ring-2 focus:ring-orange-100 bg-white resize-none shadow-sm"
+                                                    value={formData.descricaoAnuncio}
+                                                    onChange={(e) => setFormData(f => ({...f, descricaoAnuncio: e.target.value}))}
+                                                />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* PASSO 2: PRECIFICAÇÃO */}
-                                <div className={`step-content px-6 h-full ${currentStep === 2 ? 'active' : ''}`}>
-                                    <div className="step-inner-wrapper flex-grow flex flex-col items-center justify-start md:justify-center py-6 md:py-10 space-y-8">
-                                        <div className="w-full max-w-3xl space-y-8">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 justify-items-center text-center items-start">
-                                                <div className="flex flex-col items-center w-full max-w-[260px]">
-                                                    <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10"/></svg></IconCircle>
-                                                    <div className="flex flex-col items-center gap-3 mb-3">
-                                                        <ToggleSwitch checked={formData.precoPersonalizado} onChange={() => handleToggle('precoPersonalizado')} />
-                                                        <span className="font-bold text-[10px] uppercase text-gray-500 tracking-tighter">Valor Customizado</span>
-                                                    </div>
-                                                    <input type="text" className="w-full border border-gray-100 rounded-xl p-3 h-11 text-xs text-center font-bold text-gray-700 shadow-sm" value={formData.precoValor} onChange={(e) => handleInputChange('precoValor', e.target.value)} />
-                                                </div>
-                                                <div className="flex flex-col items-center w-full max-w-[260px]">
-                                                    <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/></svg></IconCircle>
-                                                    <label className="text-[9px] font-bold text-gray-400 block mb-3 uppercase tracking-widest leading-none text-center w-full">* Preço Promo</label>
-                                                    <input type="text" className="w-full border border-gray-100 rounded-xl p-3 h-11 text-xs text-center font-bold text-emerald-500 shadow-sm" value={formData.precoPromocao} onChange={(e) => handleInputChange('precoPromocao', e.target.value)} />
-                                                </div>
+                                <div className="min-w-full h-full flex flex-col items-center justify-center p-6 overflow-y-auto no-scrollbar">
+                                    <div className="w-full md:w-[768px] flex flex-col items-center gap-8 md:gap-10 text-center">
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 w-full justify-items-center">
+                                            <div className="flex flex-col items-center w-full md:w-[260px]">
+                                                <SectionHeader icon={Icons.TrendingUp} title="Valor Venda" />
+                                                <div className="mb-4"><ToggleSwitch label="Preço Customizado" checked={formData.precoPersonalizado} onChange={() => setFormData(f => ({...f, precoPersonalizado: !f.precoPersonalizado}))} /></div>
+                                                <input type="text" className="w-full border border-gray-200 rounded-xl p-3 h-11 text-sm text-center font-bold" value={formData.precoValor} onChange={(e) => setFormData(f => ({...f, precoValor: e.target.value}))} />
                                             </div>
-                                            <div className="bg-orange-50/20 rounded-2xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6 border border-orange-100/30 w-full text-center pb-12 md:pb-6">
-                                                <div className="w-full"><label className="text-[9px] font-bold text-orange-400 mb-2 block uppercase tracking-widest">Início</label><input type="date" className="w-full bg-white border border-gray-100 rounded-lg p-2 text-[11px] h-10 outline-none shadow-sm" value={formData.dataInicio} onChange={(e) => handleInputChange('dataInicio', e.target.value)} /></div>
-                                                <div className="w-full"><label className="text-[9px] font-bold text-orange-400 mb-2 block uppercase tracking-widest">Fim</label><input type="date" className="w-full bg-white border border-gray-100 rounded-lg p-2 text-[11px] h-10 outline-none shadow-sm" value={formData.dataFim} onChange={(e) => handleInputChange('dataFim', e.target.value)} /></div>
+                                            <div className="flex flex-col items-center w-full md:w-[260px]">
+                                                <SectionHeader icon={Icons.TrendingUp} title="Valor Promo" />
+                                                <label className="text-[10px] font-bold text-gray-400 block mb-2 uppercase leading-none text-center w-full">* Valor Promocional</label>
+                                                <input type="text" className="w-full border border-gray-200 rounded-xl p-3 h-11 text-sm text-center font-bold text-[#26BA9A]" value={formData.precoPromocao} onChange={(e) => setFormData(f => ({...f, precoPromocao: e.target.value}))} />
                                             </div>
+                                        </div>
+                                        <div className="bg-orange-50/50 rounded-2xl p-4 md:p-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 border border-orange-100 w-full">
+                                            <div className="w-full"><label className="text-[10px] font-bold text-orange-400 mb-2 block uppercase text-center w-full">Início da Oferta</label><input type="date" className="w-full bg-white border border-gray-200 rounded-xl p-2 text-xs h-10 outline-none" value={formData.dataInicio} onChange={(e) => setFormData(f => ({...f, dataInicio: e.target.value}))} /></div>
+                                            <div className="w-full"><label className="text-[10px] font-bold text-orange-400 mb-2 block uppercase text-center w-full">Fim da Oferta</label><input type="date" className="w-full bg-white border border-gray-200 rounded-xl p-2 text-xs h-10 outline-none" value={formData.dataFim} onChange={(e) => setFormData(f => ({...f, dataFim: e.target.value}))} /></div>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* PASSO 3: ESTOQUE */}
-                                <div className={`step-content px-6 h-full ${currentStep === 3 ? 'active' : ''}`}>
-                                    <div className="step-inner-wrapper flex-grow flex flex-col items-center justify-start md:justify-center py-6 md:py-10 space-y-10">
-                                        <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16 justify-items-center text-center items-start">
-                                            <div className="flex flex-col items-center w-full max-w-[280px]">
-                                                <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 13a9 9 0 1 1-3-7.7L21 8"/></svg></IconCircle>
-                                                <div className="flex flex-col items-center gap-3">
-                                                    <ToggleSwitch checked={formData.sincronizarEstoque} onChange={() => handleToggle('sincronizarEstoque')} />
-                                                    <span className="font-bold text-[10px] text-gray-500 uppercase tracking-widest leading-tight">Sincronizar</span>
-                                                </div>
+                                <div className="min-w-full h-full flex flex-col items-center justify-center p-6 overflow-y-auto no-scrollbar">
+                                    <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 justify-items-center text-center">
+                                        <div className="space-y-8 md:space-y-12 flex flex-col items-center w-full md:w-[320px]">
+                                            <div className="flex flex-col items-center w-full">
+                                                <SectionHeader icon={Icons.Package} title="Gestão" />
+                                                <ToggleSwitch label="Sincronizar Estoque" checked={formData.sincronizarEstoque} onChange={() => setFormData(f => ({...f, sincronizarEstoque: !f.sincronizarEstoque}))} />
                                             </div>
-                                            <div className="w-full max-w-[260px] pb-12 md:pb-0">
-                                                <IconCircle><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></IconCircle>
-                                                <label className="text-[9px] font-bold text-gray-400 block mb-2 uppercase tracking-tight text-center">Qtd. Venda</label>
-                                                <input type="text" className="w-full border border-gray-100 rounded-xl p-3 h-11 text-xs text-center font-bold text-gray-700 shadow-sm outline-none" value={formData.quantidadePedido} onChange={(e) => handleInputChange('quantidadePedido', e.target.value)} />
+                                            <div className="w-full">
+                                                <label className="text-[10px] font-bold text-gray-400 block mb-2 uppercase text-center w-full leading-none">* Qtd. por Pedido</label>
+                                                <input type="text" className="w-full border border-gray-200 rounded-xl p-3 h-11 text-sm text-center font-bold text-gray-700 shadow-sm" value={formData.quantidadePedido} onChange={(e) => setFormData(f => ({...f, quantidadePedido: e.target.value}))} />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-8 md:space-y-12 flex flex-col items-center w-full md:w-[320px]">
+                                            <div className="w-full">
+                                                <SectionHeader icon={Icons.Globe} title="Marketplace" />
+                                                <label className="text-[10px] font-bold text-gray-400 block mb-2 uppercase text-center w-full leading-none">Canal Principal</label>
+                                                <select className="w-full h-11 border border-gray-200 rounded-xl px-3 text-xs bg-white outline-none text-center font-bold" value={formData.canalVenda} onChange={(e) => setFormData(f => ({...f, canalVenda: e.target.value}))}>
+                                                    <option value="">NENHUM SELECIONADO</option>
+                                                    <option value="shopee">SHOPEE</option>
+                                                    <option value="amazon">AMAZON</option>
+                                                    <option value="mercado_livre">MERCADO LIVRE</option>
+                                                </select>
+                                            </div>
+                                            <div className="w-full">
+                                                <SectionHeader icon={Icons.AlertTriangle} title="Ruptura" />
+                                                <label className="text-[10px] font-bold text-gray-400 block mb-2 uppercase text-center w-full leading-none">Ponto de Ruptura</label>
+                                                <input type="text" className="w-full border border-gray-200 rounded-xl p-3 h-11 text-sm text-center font-bold text-red-500 shadow-sm" value={formData.pontoRuptura} onChange={(e) => setFormData(f => ({...f, pontoRuptura: e.target.value}))} />
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+
                             </div>
                         </div>
 
                         {/* Rodapé Fixo */}
-                        <div className="p-4 md:p-8 flex items-center justify-end gap-3 border-t border-gray-50 bg-white shrink-0 sticky bottom-0 z-40">
-                            {currentStep > 0 && (
-                                <button onClick={prevStep} className="px-6 md:px-8 py-3 bg-gray-50 text-gray-400 rounded-xl font-bold text-[10px] uppercase active:scale-95 transition-all">Voltar</button>
-                            )}
-                            <button onClick={nextStep} className={`flex-1 md:flex-none px-8 py-3 text-white rounded-xl font-bold text-[10px] uppercase transition-all shadow-xl active:scale-95 ${currentStep === steps.length - 1 ? 'bg-[#FFB85C]' : 'bg-[#26BA9A]'}`}>
-                                {currentStep === steps.length - 1 ? 'Concluir' : 'Próximo'}
+                        <div className="p-4 md:p-8 flex items-center justify-between border-t border-gray-50 bg-white shrink-0 sticky bottom-0 z-50">
+                            <button 
+                                onClick={prevStep} 
+                                className={`px-4 md:px-6 py-3 rounded-xl font-bold text-[10px] md:text-[11px] uppercase transition-all flex items-center gap-2
+                                    ${currentStep > 0 ? 'bg-gray-100 text-gray-500 active:scale-90' : 'opacity-0 pointer-events-none'}`}
+                            >
+                                <Icons.ChevronLeft />
+                                <span>Voltar</span>
+                            </button>
+                            
+                            <button 
+                                onClick={nextStep} 
+                                className={`px-6 md:px-8 py-3 text-white rounded-xl font-bold text-[10px] md:text-[11px] uppercase transition-all shadow-lg active:scale-90 flex items-center gap-2
+                                    ${currentStep === steps.length - 1 ? 'bg-[#FFB85C]' : 'bg-[#26BA9A]'}`}
+                            >
+                                <span>{currentStep === steps.length - 1 ? 'Finalizar' : 'Continuar'}</span>
+                                {currentStep < steps.length - 1 && <Icons.ChevronRight />}
                             </button>
                         </div>
 
                     </div>
                 </div>
             );
-        };
+        }
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
         root.render(<App />);
     </script>
 </body>
